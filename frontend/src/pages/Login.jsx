@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, Card, Typography, message, Space, Divider } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
-import { login } from '../services/authService';
 import { useNavigate } from 'react-router-dom';
+import { login } from '../services/auth';
 
 const { Title, Text } = Typography;
 
