@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Card, message } from 'antd';
+import { Form, Input, Button, Card, Typography, message, Space, Divider } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { login } from '../services/authService';
 import { useNavigate } from 'react-router-dom';
+
+const { Title, Text } = Typography;
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
@@ -27,61 +29,77 @@ const Login = () => {
       justifyContent: 'center', 
       alignItems: 'center', 
       minHeight: '100vh',
-      background: '#f0f2f5'
+      background: 'linear-gradient(135deg, #1890ff 0%, #722ed1 100%)'
     }}>
       <Card 
-        title="Admin Login" 
-        style={{ width: 400 }}
-        headStyle={{ textAlign: 'center', fontSize: '24px' }}
+        style={{ 
+          width: 400, 
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          borderRadius: '8px'
+        }}
       >
-        <Form
-          name="login"
-          onFinish={onFinish}
-          autoComplete="off"
-          layout="vertical"
-        >
-          <Form.Item
-            name="email"
-            rules={[
-              { required: true, message: 'Please input your email!' },
-              { type: 'email', message: 'Please enter a valid email!' }
-            ]}
+        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+          <div style={{ textAlign: 'center' }}>
+            <Title level={2}>Welcome Back</Title>
+            <Text type="secondary">Sign in to your admin account</Text>
+          </div>
+          
+          <Form
+            name="login"
+            onFinish={onFinish}
+            autoComplete="off"
+            layout="vertical"
           >
-            <Input 
-              prefix={<UserOutlined />} 
-              placeholder="Email" 
-              size="large"
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="password"
-            rules={[{ required: true, message: 'Please input your password!' }]}
-          >
-            <Input.Password
-              prefix={<LockOutlined />}
-              placeholder="Password"
-              size="large"
-            />
-          </Form.Item>
-
-          <Form.Item>
-            <Button 
-              type="primary" 
-              htmlType="submit" 
-              loading={loading}
-              block
-              size="large"
+            <Form.Item
+              name="email"
+              rules={[
+                { required: true, message: 'Please input your email!' },
+                { type: 'email', message: 'Please enter a valid email!' }
+              ]}
             >
-              Log in
-            </Button>
-          </Form.Item>
-        </Form>
-        <div style={{ textAlign: 'center', marginTop: '16px' }}>
-          <p>Demo Credentials:</p>
-          <p>Email: admin@example.com</p>
-          <p>Password: admin123</p>
-        </div>
+              <Input 
+                prefix={<UserOutlined />} 
+                placeholder="Email" 
+                size="large"
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="password"
+              rules={[{ required: true, message: 'Please input your password!' }]}
+            >
+              <Input.Password
+                prefix={<LockOutlined />}
+                placeholder="Password"
+                size="large"
+              />
+            </Form.Item>
+
+            <Form.Item>
+              <Button 
+                type="primary" 
+                htmlType="submit" 
+                loading={loading}
+                size="large"
+                block
+              >
+                Log in
+              </Button>
+            </Form.Item>
+          </Form>
+
+          <Divider>Demo Credentials</Divider>
+          
+          <div style={{ 
+            background: '#f5f5f5', 
+            padding: '16px', 
+            borderRadius: '4px',
+            textAlign: 'center'
+          }}>
+            <Text strong>Email:</Text> admin@example.com<br />
+            <Text strong>Password:</Text> admin123
+          </div>
+        </Space>
       </Card>
     </div>
   );
