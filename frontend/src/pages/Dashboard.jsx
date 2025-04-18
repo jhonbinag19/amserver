@@ -1,17 +1,19 @@
 import React from 'react';
-import { Row, Col, Card, Statistic } from 'antd';
-import { UserOutlined, DollarOutlined, TeamOutlined, FileOutlined } from '@ant-design/icons';
+import { Card, Row, Col, Statistic, Typography } from 'antd';
+import { UserOutlined, FileOutlined, TeamOutlined, SettingOutlined } from '@ant-design/icons';
+
+const { Title } = Typography;
 
 const Dashboard = () => {
   return (
     <div>
-      <h1 style={{ marginBottom: '24px' }}>Dashboard</h1>
+      <Title level={2}>Dashboard</Title>
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} md={6}>
           <Card>
             <Statistic
               title="Total Users"
-              value={5}
+              value={1128}
               prefix={<UserOutlined />}
             />
           </Card>
@@ -19,17 +21,17 @@ const Dashboard = () => {
         <Col xs={24} sm={12} md={6}>
           <Card>
             <Statistic
-              title="Active Subscriptions"
-              value={3}
-              prefix={<DollarOutlined />}
+              title="Total Files"
+              value={93}
+              prefix={<FileOutlined />}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} md={6}>
           <Card>
             <Statistic
-              title="Trial Users"
-              value={2}
+              title="Active Teams"
+              value={8}
               prefix={<TeamOutlined />}
             />
           </Card>
@@ -37,10 +39,9 @@ const Dashboard = () => {
         <Col xs={24} sm={12} md={6}>
           <Card>
             <Statistic
-              title="Total Revenue"
-              value={4500}
-              prefix={<FileOutlined />}
-              suffix="$"
+              title="Settings"
+              value={12}
+              prefix={<SettingOutlined />}
             />
           </Card>
         </Col>
