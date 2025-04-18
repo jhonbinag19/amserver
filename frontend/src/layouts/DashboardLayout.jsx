@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Menu, Button, Avatar, Dropdown, Space, Typography } from 'antd';
+import { Layout, Menu, Button, Avatar, Dropdown, Space, Typography, theme } from 'antd';
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
@@ -86,7 +86,7 @@ import {
   FileProtectFilled as FileProtectFilledIcon,
   FileDoneFilled as FileDoneFilledIcon,
 } from '@ant-design/icons';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { logout, getCurrentUser } from '../services/auth';
 
 const { Header, Sider, Content } = Layout;
