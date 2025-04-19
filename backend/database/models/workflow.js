@@ -1,78 +1,104 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config');
+const mongoose = require('mongoose');
 
-const Workflow = sequelize.define('Workflow', {
-  id: {
-    type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4,
-    primaryKey: true
-  },
+const workflowSchema = new mongoose.Schema({
   name: {
-    type: DataTypes.STRING,
-    allowNull: false
+    type: String,
+    required: true
   },
-  organization_id: {
-    type: DataTypes.UUID,
-    allowNull: false
+  organizationId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Organization',
+    required: true
   },
-  trigger_id: {
-    type: DataTypes.STRING,
-    allowNull: false
+  trigger: {
+    type: {
+      type: String,
+      enum: ['webhook', 'schedule', 'event'],
+      required: true
+    },
+    config: {
+      schedule: String, // Cron expression for schedule triggers
+      webhookUrl: String, // Generated webhook URL
+      event: String, // Event name for event triggers
+    }
   },
-  trigger_fields: {
-    type: DataTypes.JSONB,
-    allowNull: false
+  source: {
+    integration: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Integration',
+      required: true
+    },
+    config: {
+      type: Map,
+      of: mongoose.Schema.Types.Mixed
+    }
   },
-  action_id: {
-    type: DataTypes.STRING,
-    allowNull: false
+  target: {
+    integration: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Integration',
+      required: true
+    },
+    config: {
+      type: Map,
+      of: mongoose.Schema.Types.Mixed
+    }
   },
-  action_fields: {
-    type: DataTypes.JSONB,
-    allowNull: false
+  transformations: [{
+    field: String,
+    type: String,
+    value: mongoose.Schema.Types.Mixed
+  }],
+  conditions: [{
+    field: String,
+    operator: String,
+    value: mongoose.Schema.Types.Mixed
+  }],
+  active: {
+    type: Boolean,
+    default: true
   },
-  is_active: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: true
+  lastRun: {
+    type: Date
+  },
+  lastStatus: {
+    type: String,
+    enum: ['success', 'error', 'pending', null],
+    default: null
+  },
+  errorCount: {
+    type: Number,
+    default: 0
+  },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
   }
 });
 
-const Trigger = sequelize.define('Trigger', {
-  id: {
-    type: DataTypes.STRING,
-    primaryKey: true
-  },
-  name: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  fields: {
-    type: DataTypes.JSONB,
-    allowNull: false
-  }
+// Update the updatedAt timestamp on save
+workflowSchema.pre('save', function(next) {
+  this.updatedAt = Date.now();
+  next();
 });
 
-const Action = sequelize.define('Action', {
-  id: {
-    type: DataTypes.STRING,
-    primaryKey: true
-  },
-  name: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  fields: {
-    type: DataTypes.JSONB,
-    allowNull: false
+// Generate webhook URL if trigger type is webhook
+workflowSchema.pre('save', function(next) {
+  if (this.trigger.type === 'webhook' && !this.trigger.config.webhookUrl) {
+    this.trigger.config.webhookUrl = `/api/workflows/webhook/${this._id}`;
   }
+  next();
 });
 
-// Define associations
-Workflow.belongsTo(Trigger, { foreignKey: 'trigger_id', as: 'trigger' });
-Workflow.belongsTo(Action, { foreignKey: 'action_id', as: 'action' });
+const Workflow = mongoose.model('Workflow', workflowSchema);
 
-module.exports = {
-  Workflow,
-  Trigger,
-  Action
-}; 
+module.exports = Workflow; 
