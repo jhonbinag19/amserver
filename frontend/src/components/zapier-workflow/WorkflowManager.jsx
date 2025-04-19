@@ -41,8 +41,8 @@ import {
 import axios from 'axios';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { WorkflowStep } from './WorkflowStep';
-import { WorkflowCanvas } from './WorkflowCanvas';
+import WorkflowCanvas from './WorkflowCanvas';
+import WorkflowStep from './WorkflowStep';
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -180,6 +180,24 @@ const WorkflowManager = () => {
 
   const removeStep = (stepId) => {
     setWorkflowSteps(workflowSteps.filter(step => step.id !== stepId));
+  };
+
+  const handleFormValuesChange = (changedValues) => {
+    if (selectedWorkflow) {
+      setSelectedWorkflow(prev => ({
+        ...prev,
+        ...changedValues
+      }));
+    }
+  };
+
+  const handleTriggerTypeChange = (value) => {
+    form.setFieldsValue({
+      trigger: {
+        type: value,
+        config: {}
+      }
+    });
   };
 
   const columns = [
@@ -362,6 +380,7 @@ const WorkflowManager = () => {
                     step={selectedStep}
                     onUpdate={(updates) => updateStep(selectedStep.id, updates)}
                     integrations={integrations}
+                    workflowSteps={workflowSteps}
                   />
                 </Card>
               )}
@@ -379,10 +398,17 @@ const WorkflowManager = () => {
         <Form
           form={form}
           layout="vertical"
+          onValuesChange={handleFormValuesChange}
           onFinish={selectedWorkflow ? 
             (values) => handleUpdateWorkflow(selectedWorkflow.id, values) :
             handleCreateWorkflow
           }
+          initialValues={selectedWorkflow || {
+            trigger: {
+              type: TRIGGER_TYPES.WEBHOOK,
+              config: {}
+            }
+          }}
         >
           <Form.Item
             name="name"
@@ -397,7 +423,10 @@ const WorkflowManager = () => {
             label="Trigger Type"
             rules={[{ required: true, message: 'Please select trigger type' }]}
           >
-            <Select placeholder="Select trigger type">
+            <Select 
+              placeholder="Select trigger type"
+              onChange={handleTriggerTypeChange}
+            >
               {Object.entries(TRIGGER_TYPES).map(([key, value]) => (
                 <Option key={key} value={value}>
                   {value.charAt(0).toUpperCase() + value.slice(1)}

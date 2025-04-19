@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Form,
   Input,
@@ -28,8 +28,15 @@ const { TabPane } = Tabs;
 const { Panel } = Collapse;
 const { Text } = Typography;
 
-const WorkflowStep = ({ step, onUpdate, integrations }) => {
+const WorkflowStep = ({ step, onUpdate, integrations, workflowSteps }) => {
   const [form] = Form.useForm();
+
+  useEffect(() => {
+    form.setFieldsValue({
+      name: step.name,
+      ...step.config
+    });
+  }, [step, form]);
 
   const handleValuesChange = (changedValues) => {
     onUpdate({
@@ -61,7 +68,10 @@ const WorkflowStep = ({ step, onUpdate, integrations }) => {
               label="Schedule Type"
               rules={[{ required: true, message: 'Please select schedule type' }]}
             >
-              <Select placeholder="Select schedule type">
+              <Select 
+                placeholder="Select schedule type"
+                onChange={(value) => handleValuesChange({ scheduleType: value })}
+              >
                 <Option value="interval">Interval</Option>
                 <Option value="cron">Cron Expression</Option>
                 <Option value="specific">Specific Time</Option>
@@ -103,7 +113,10 @@ const WorkflowStep = ({ step, onUpdate, integrations }) => {
             label="Event Type"
             rules={[{ required: true, message: 'Please select event type' }]}
           >
-            <Select placeholder="Select event type">
+            <Select 
+              placeholder="Select event type"
+              onChange={(value) => handleValuesChange({ eventType: value })}
+            >
               {integrations.map(integration => (
                 <Option key={integration.id} value={integration.name}>
                   {integration.displayName}
@@ -127,7 +140,10 @@ const WorkflowStep = ({ step, onUpdate, integrations }) => {
               label="HTTP Method"
               rules={[{ required: true, message: 'Please select HTTP method' }]}
             >
-              <Select placeholder="Select HTTP method">
+              <Select 
+                placeholder="Select HTTP method"
+                onChange={(value) => handleValuesChange({ method: value })}
+              >
                 <Option value="GET">GET</Option>
                 <Option value="POST">POST</Option>
                 <Option value="PUT">PUT</Option>
@@ -164,7 +180,10 @@ const WorkflowStep = ({ step, onUpdate, integrations }) => {
               label="Database Type"
               rules={[{ required: true, message: 'Please select database type' }]}
             >
-              <Select placeholder="Select database type">
+              <Select 
+                placeholder="Select database type"
+                onChange={(value) => handleValuesChange({ databaseType: value })}
+              >
                 <Option value="mysql">MySQL</Option>
                 <Option value="postgresql">PostgreSQL</Option>
                 <Option value="mongodb">MongoDB</Option>
@@ -187,7 +206,10 @@ const WorkflowStep = ({ step, onUpdate, integrations }) => {
               label="Integration"
               rules={[{ required: true, message: 'Please select integration' }]}
             >
-              <Select placeholder="Select integration">
+              <Select 
+                placeholder="Select integration"
+                onChange={(value) => handleValuesChange({ integration: value })}
+              >
                 {integrations.map(integration => (
                   <Option key={integration.id} value={integration.name}>
                     {integration.displayName}
@@ -200,7 +222,10 @@ const WorkflowStep = ({ step, onUpdate, integrations }) => {
               label="Action"
               rules={[{ required: true, message: 'Please select action' }]}
             >
-              <Select placeholder="Select action">
+              <Select 
+                placeholder="Select action"
+                onChange={(value) => handleValuesChange({ action: value })}
+              >
                 {step.config.integration && integrations
                   .find(i => i.name === step.config.integration)
                   ?.actions.map(action => (
@@ -246,7 +271,10 @@ const WorkflowStep = ({ step, onUpdate, integrations }) => {
     <Form
       form={form}
       layout="vertical"
-      initialValues={step.config}
+      initialValues={{
+        name: step.name,
+        ...step.config
+      }}
       onValuesChange={handleValuesChange}
     >
       <Form.Item

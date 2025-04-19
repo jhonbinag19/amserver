@@ -13,6 +13,9 @@ import SubAccounts from './components/ghl/SubAccounts';
 import IntegrationWorkflows from './components/ghl/IntegrationWorkflows';
 import PaymentBilling from './components/ghl/PaymentBilling';
 import IntegrationSettings from './components/ghl/IntegrationSettings';
+import WorkflowCanvas from './components/zapier-workflow/WorkflowCanvas';
+import WorkflowStep from './components/zapier-workflow/WorkflowStep';
+import WorkflowManager from './components/zapier-workflow/WorkflowManager';
 import DashboardLayout from './components/layout/DashboardLayout';
 import { isAuthenticated } from './services/auth';
 
@@ -68,6 +71,11 @@ const App = () => {
             <Route path="ghl/workflows" element={<IntegrationWorkflows />} />
             <Route path="ghl/billing" element={<PaymentBilling />} />
             <Route path="ghl/settings" element={<IntegrationSettings />} />
+
+            {/* Zapier Workflow Routes */}
+            <Route path="zapier-workflow/canvas" element={<WorkflowCanvas />} />
+            <Route path="zapier-workflow/steps" element={<WorkflowStep />} />
+            <Route path="zapier-workflow/manager" element={<WorkflowManager />} />
           </Route>
           <Route path="*" element={<Navigate to="/login" />} />
         </Routes>

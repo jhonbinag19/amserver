@@ -13,7 +13,8 @@ import {
   BankOutlined,
   ApartmentOutlined,
   ToolOutlined,
-  LinkOutlined
+  LinkOutlined,
+  BranchesOutlined
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { logout } from '../../services/auth';
