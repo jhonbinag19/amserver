@@ -28,7 +28,7 @@ const AgencyAccounts = () => {
   const checkConnection = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/ghl/connection/status');
+      const response = await axios.get('/api/users/integrations/connection/status');
       if (response.data.connected) {
         setAgency(response.data.agency);
         fetchSubAccounts();
@@ -43,7 +43,7 @@ const AgencyAccounts = () => {
   const fetchSubAccounts = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/ghl/sub-accounts');
+      const response = await axios.get('/api/users/integrations/agency/sub-accounts');
       setSubAccounts(response.data);
     } catch (error) {
       message.error('Failed to fetch sub-accounts');
@@ -54,7 +54,7 @@ const AgencyAccounts = () => {
 
   const handleConnect = async () => {
     try {
-      const response = await axios.get('/api/ghl/connect');
+      const response = await axios.get('/api/users/integrations/connect');
       window.location.href = response.data.authUrl;
     } catch (error) {
       message.error('Failed to initiate connection');
@@ -64,7 +64,7 @@ const AgencyAccounts = () => {
   const handleSync = async () => {
     try {
       setSyncing(true);
-      await axios.post('/api/ghl/sync');
+      await axios.post('/api/users/integrations/agency/sync');
       await fetchSubAccounts();
       message.success('Sub-accounts synchronized successfully');
     } catch (error) {

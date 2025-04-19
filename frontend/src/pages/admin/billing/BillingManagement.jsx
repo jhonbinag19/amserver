@@ -17,7 +17,7 @@ import {
   Tooltip
 } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import api from '../../utils/axios';
+import api from '../../../utils/axios';
 import moment from 'moment';
 
 const { Title } = Typography;

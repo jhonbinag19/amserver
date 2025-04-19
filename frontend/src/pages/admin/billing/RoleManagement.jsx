@@ -6,28 +6,38 @@ import {
   Modal,
   Form,
   Input,
-  Select,
+  Checkbox,
   Space,
   message,
   Typography,
   Tag
 } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import api from '../../utils/axios';
+import api from '../../../utils/axios';
 
 const { Title } = Typography;
-const { Option } = Select;
 
-const PermissionManagement = () => {
+const RoleManagement = () => {
+  const [roles, setRoles] = useState([]);
   const [permissions, setPermissions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [form] = Form.useForm();
-  const [editingPermission, setEditingPermission] = useState(null);
+  const [editingRole, setEditingRole] = useState(null);
 
   useEffect(() => {
+    fetchRoles();
     fetchPermissions();
   }, []);
+
+  const fetchRoles = async () => {
+    try {
+      const response = await api.get('/roles');
+      setRoles(response.data);
+    } catch (error) {
+      message.error('Failed to fetch roles');
+    }
+  };
 
   const fetchPermissions = async () => {
     try {
@@ -41,19 +51,19 @@ const PermissionManagement = () => {
   const handleSubmit = async (values) => {
     try {
       setLoading(true);
-      if (editingPermission) {
-        await api.put(`/permissions/${editingPermission.id}`, values);
-        message.success('Permission updated successfully');
+      if (editingRole) {
+        await api.put(`/roles/${editingRole.id}`, values);
+        message.success('Role updated successfully');
       } else {
-        await api.post('/permissions', values);
-        message.success('Permission created successfully');
+        await api.post('/roles', values);
+        message.success('Role created successfully');
       }
       setModalVisible(false);
       form.resetFields();
-      setEditingPermission(null);
-      fetchPermissions();
+      setEditingRole(null);
+      fetchRoles();
     } catch (error) {
-      message.error('Failed to save permission');
+      message.error('Failed to save role');
     } finally {
       setLoading(false);
     }
@@ -61,11 +71,11 @@ const PermissionManagement = () => {
 
   const handleDelete = async (id) => {
     try {
-      await api.delete(`/permissions/${id}`);
-      message.success('Permission deleted successfully');
-      fetchPermissions();
+      await api.delete(`/roles/${id}`);
+      message.success('Role deleted successfully');
+      fetchRoles();
     } catch (error) {
-      message.error('Failed to delete permission');
+      message.error('Failed to delete role');
     }
   };
 
@@ -81,18 +91,17 @@ const PermissionManagement = () => {
       key: 'description',
     },
     {
-      title: 'Resource',
-      dataIndex: 'resource',
-      key: 'resource',
-    },
-    {
-      title: 'Action',
-      dataIndex: 'action',
-      key: 'action',
-      render: (action) => (
-        <Tag color={getActionColor(action)}>
-          {action}
-        </Tag>
+      title: 'Permissions',
+      dataIndex: 'Permissions',
+      key: 'permissions',
+      render: (permissions) => (
+        <Space wrap>
+          {permissions.map(permission => (
+            <Tag key={permission.id}>
+              {permission.name}
+            </Tag>
+          ))}
+        </Space>
       ),
     },
     {
@@ -104,12 +113,12 @@ const PermissionManagement = () => {
             type="primary"
             icon={<EditOutlined />}
             onClick={() => {
-              setEditingPermission(record);
+              setEditingRole(record);
               form.setFieldsValue({
                 name: record.name,
                 description: record.description,
-                resource: record.resource,
-                action: record.action
+                isAdmin: record.isAdmin,
+                permissions: record.Permissions.map(p => p.id)
               });
               setModalVisible(true);
             }}
@@ -128,49 +137,38 @@ const PermissionManagement = () => {
     },
   ];
 
-  const getActionColor = (action) => {
-    const colors = {
-      create: 'green',
-      read: 'blue',
-      update: 'orange',
-      delete: 'red',
-      manage: 'purple'
-    };
-    return colors[action] || 'default';
-  };
-
   return (
     <div style={{ padding: '24px' }}>
       <Card>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
-          <Title level={4}>Permission Management</Title>
+          <Title level={4}>Role Management</Title>
           <Button
             type="primary"
             icon={<PlusOutlined />}
             onClick={() => {
-              setEditingPermission(null);
+              setEditingRole(null);
               form.resetFields();
               setModalVisible(true);
             }}
           >
-            Add Permission
+            Add Role
           </Button>
         </div>
 
         <Table
           columns={columns}
-          dataSource={permissions}
+          dataSource={roles}
           rowKey="id"
           loading={loading}
         />
 
         <Modal
-          title={editingPermission ? 'Edit Permission' : 'Add Permission'}
+          title={editingRole ? 'Edit Role' : 'Add Role'}
           open={modalVisible}
           onCancel={() => {
             setModalVisible(false);
             form.resetFields();
-            setEditingPermission(null);
+            setEditingRole(null);
           }}
           footer={null}
         >
@@ -181,44 +179,44 @@ const PermissionManagement = () => {
           >
             <Form.Item
               name="name"
-              label="Permission Name"
-              rules={[{ required: true, message: 'Please input permission name!' }]}
+              label="Role Name"
+              rules={[{ required: true, message: 'Please input role name!' }]}
             >
-              <Input placeholder="Enter permission name" />
+              <Input placeholder="Enter role name" />
             </Form.Item>
 
             <Form.Item
               name="description"
               label="Description"
             >
-              <Input.TextArea placeholder="Enter permission description" />
+              <Input.TextArea placeholder="Enter role description" />
             </Form.Item>
 
             <Form.Item
-              name="resource"
-              label="Resource"
-              rules={[{ required: true, message: 'Please select resource!' }]}
+              name="isAdmin"
+              valuePropName="checked"
             >
-              <Input placeholder="Enter resource name (e.g., users, roles, permissions)" />
+              <Checkbox>Is Admin Role</Checkbox>
             </Form.Item>
 
             <Form.Item
-              name="action"
-              label="Action"
-              rules={[{ required: true, message: 'Please select action!' }]}
+              name="permissions"
+              label="Permissions"
             >
-              <Select placeholder="Select action">
-                <Option value="create">Create</Option>
-                <Option value="read">Read</Option>
-                <Option value="update">Update</Option>
-                <Option value="delete">Delete</Option>
-                <Option value="manage">Manage</Option>
-              </Select>
+              <Checkbox.Group style={{ width: '100%' }}>
+                {permissions.map(permission => (
+                  <div key={permission.id} style={{ marginBottom: '8px' }}>
+                    <Checkbox value={permission.id}>
+                      {permission.name} ({permission.resource} - {permission.action})
+                    </Checkbox>
+                  </div>
+                ))}
+              </Checkbox.Group>
             </Form.Item>
 
             <Form.Item>
               <Button type="primary" htmlType="submit" loading={loading}>
-                {editingPermission ? 'Update' : 'Create'}
+                {editingRole ? 'Update' : 'Create'}
               </Button>
             </Form.Item>
           </Form>
@@ -228,4 +226,4 @@ const PermissionManagement = () => {
   );
 };
 
-export default PermissionManagement; 
+export default RoleManagement; 

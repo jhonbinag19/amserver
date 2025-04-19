@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Tabs, List, Tag, Button, Space, Typography, Badge, message, Tooltip, Input, Row, Col, Modal, Steps, Select, Divider } from 'antd';
+import { Card, Tabs, List, Tag, Button, Space, Typography, Badge, message, Tooltip, Input, Row, Col, Modal, Steps, Select, Divider, Collapse } from 'antd';
 import { 
   ApiOutlined, 
   SyncOutlined, 
@@ -8,93 +8,299 @@ import {
   CheckCircleOutlined,
   ExclamationCircleOutlined,
   SearchOutlined,
-  PlusOutlined,
-  ArrowRightOutlined
+  PlusOutlined
 } from '@ant-design/icons';
-import WorkflowActions from '../../components/workflow/WorkflowActions';
 import api from '../../utils/axios';
 
 const { TabPane } = Tabs;
 const { Title, Text } = Typography;
 const { Search } = Input;
-const { Option } = Select;
-const { Step } = Steps;
+const { Panel } = Collapse;
+
+const BUILT_IN_ACTIONS = {
+  'Flodesk': [
+    { 
+      name: 'Add Subscriber',
+      description: 'Add a new subscriber to a Flodesk list',
+      type: 'action',
+      fields: ['email', 'firstName', 'lastName', 'listId'],
+      tool: 'flodesk'
+    },
+    { 
+      name: 'Update Subscriber',
+      description: 'Update subscriber information',
+      type: 'action',
+      fields: ['email', 'updateFields'],
+      tool: 'flodesk'
+    },
+    { 
+      name: 'Remove Subscriber',
+      description: 'Remove a subscriber from a list',
+      type: 'action',
+      fields: ['email', 'listId'],
+      tool: 'flodesk'
+    },
+    { 
+      name: 'Add Tag',
+      description: 'Add a tag to a subscriber',
+      type: 'action',
+      fields: ['email', 'tag'],
+      tool: 'flodesk'
+    },
+    { 
+      name: 'Remove Tag',
+      description: 'Remove a tag from a subscriber',
+      type: 'action',
+      fields: ['email', 'tag'],
+      tool: 'flodesk'
+    }
+  ],
+  'ActiveCampaign': [
+    {
+      name: 'Create Contact',
+      description: 'Create a new contact in ActiveCampaign',
+      type: 'action',
+      fields: ['email', 'firstName', 'lastName', 'phone', 'tags'],
+      tool: 'activecampaign'
+    },
+    {
+      name: 'Update Contact',
+      description: 'Update an existing contact',
+      type: 'action',
+      fields: ['email', 'updateFields'],
+      tool: 'activecampaign'
+    },
+    {
+      name: 'Add Contact to List',
+      description: 'Add a contact to a specific list',
+      type: 'action',
+      fields: ['email', 'listId'],
+      tool: 'activecampaign'
+    },
+    {
+      name: 'Add Contact to Automation',
+      description: 'Add a contact to an automation',
+      type: 'action',
+      fields: ['email', 'automationId'],
+      tool: 'activecampaign'
+    },
+    {
+      name: 'Add Tag to Contact',
+      description: 'Add a tag to a contact',
+      type: 'action',
+      fields: ['email', 'tag'],
+      tool: 'activecampaign'
+    }
+  ],
+  'Instantly.ai': [
+    {
+      name: 'Create Lead',
+      description: 'Create a new lead in Instantly.ai',
+      type: 'action',
+      fields: ['email', 'firstName', 'lastName', 'company', 'customFields'],
+      tool: 'instantly'
+    },
+    {
+      name: 'Update Lead',
+      description: 'Update an existing lead',
+      type: 'action',
+      fields: ['email', 'updateFields'],
+      tool: 'instantly'
+    },
+    {
+      name: 'Add Lead to Campaign',
+      description: 'Add a lead to a specific campaign',
+      type: 'action',
+      fields: ['email', 'campaignId'],
+      tool: 'instantly'
+    },
+    {
+      name: 'Update Lead Status',
+      description: 'Update the status of a lead',
+      type: 'action',
+      fields: ['email', 'status'],
+      tool: 'instantly'
+    }
+  ],
+  'ConvertKit': [
+    {
+      name: 'Add Subscriber',
+      description: 'Add a new subscriber to ConvertKit',
+      type: 'action',
+      fields: ['email', 'firstName', 'lastName', 'tags'],
+      tool: 'convertkit'
+    },
+    {
+      name: 'Update Subscriber',
+      description: 'Update subscriber information',
+      type: 'action',
+      fields: ['email', 'updateFields'],
+      tool: 'convertkit'
+    },
+    {
+      name: 'Add Tag',
+      description: 'Add a tag to a subscriber',
+      type: 'action',
+      fields: ['email', 'tag'],
+      tool: 'convertkit'
+    },
+    {
+      name: 'Remove Tag',
+      description: 'Remove a tag from a subscriber',
+      type: 'action',
+      fields: ['email', 'tag'],
+      tool: 'convertkit'
+    },
+    {
+      name: 'Add to Sequence',
+      description: 'Add a subscriber to a sequence',
+      type: 'action',
+      fields: ['email', 'sequenceId'],
+      tool: 'convertkit'
+    }
+  ],
+  'Klaviyo': [
+    {
+      name: 'Create Profile',
+      description: 'Create a new profile in Klaviyo',
+      type: 'action',
+      fields: ['email', 'firstName', 'lastName', 'phone', 'customProperties'],
+      tool: 'klaviyo'
+    },
+    {
+      name: 'Update Profile',
+      description: 'Update an existing profile',
+      type: 'action',
+      fields: ['email', 'updateFields'],
+      tool: 'klaviyo'
+    },
+    {
+      name: 'Add to List',
+      description: 'Add a profile to a list',
+      type: 'action',
+      fields: ['email', 'listId'],
+      tool: 'klaviyo'
+    },
+    {
+      name: 'Add to Segment',
+      description: 'Add a profile to a segment',
+      type: 'action',
+      fields: ['email', 'segmentId'],
+      tool: 'klaviyo'
+    },
+    {
+      name: 'Track Event',
+      description: 'Track a custom event',
+      type: 'action',
+      fields: ['email', 'eventName', 'eventProperties'],
+      tool: 'klaviyo'
+    }
+  ]
+};
+
+const BUILT_IN_TRIGGERS = {
+  'Flodesk': [
+    {
+      name: 'New Subscriber',
+      description: 'Triggers when a new subscriber is added',
+      type: 'trigger',
+      fields: ['listId'],
+      tool: 'flodesk'
+    },
+    {
+      name: 'Subscriber Tagged',
+      description: 'Triggers when a subscriber is tagged',
+      type: 'trigger',
+      fields: ['tag'],
+      tool: 'flodesk'
+    }
+  ],
+  'ActiveCampaign': [
+    {
+      name: 'New Contact',
+      description: 'Triggers when a new contact is created',
+      type: 'trigger',
+      fields: ['listId'],
+      tool: 'activecampaign'
+    },
+    {
+      name: 'Contact Tagged',
+      description: 'Triggers when a contact is tagged',
+      type: 'trigger',
+      fields: ['tag'],
+      tool: 'activecampaign'
+    },
+    {
+      name: 'Automation Started',
+      description: 'Triggers when an automation starts',
+      type: 'trigger',
+      fields: ['automationId'],
+      tool: 'activecampaign'
+    }
+  ],
+  'Instantly.ai': [
+    {
+      name: 'New Lead',
+      description: 'Triggers when a new lead is created',
+      type: 'trigger',
+      fields: ['campaignId'],
+      tool: 'instantly'
+    },
+    {
+      name: 'Lead Status Changed',
+      description: 'Triggers when lead status changes',
+      type: 'trigger',
+      fields: ['status'],
+      tool: 'instantly'
+    }
+  ],
+  'ConvertKit': [
+    {
+      name: 'New Subscriber',
+      description: 'Triggers when a new subscriber is added',
+      type: 'trigger',
+      fields: ['formId'],
+      tool: 'convertkit'
+    },
+    {
+      name: 'Subscriber Tagged',
+      description: 'Triggers when a subscriber is tagged',
+      type: 'trigger',
+      fields: ['tag'],
+      tool: 'convertkit'
+    }
+  ],
+  'Klaviyo': [
+    {
+      name: 'New Profile',
+      description: 'Triggers when a new profile is created',
+      type: 'trigger',
+      fields: ['listId'],
+      tool: 'klaviyo'
+    },
+    {
+      name: 'Profile Updated',
+      description: 'Triggers when a profile is updated',
+      type: 'trigger',
+      fields: ['updateFields'],
+      tool: 'klaviyo'
+    },
+    {
+      name: 'Custom Event',
+      description: 'Triggers when a custom event occurs',
+      type: 'trigger',
+      fields: ['eventName'],
+      tool: 'klaviyo'
+    }
+  ]
+};
 
 const IntegrationTools = () => {
   const [connectedTools, setConnectedTools] = useState([]);
   const [loading, setLoading] = useState(false);
   const [syncingTool, setSyncingTool] = useState(null);
-  const [workflowModalVisible, setWorkflowModalVisible] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
-  const [selectedTool, setSelectedTool] = useState(null);
-  const [selectedTrigger, setSelectedTrigger] = useState(null);
-  const [selectedAction, setSelectedAction] = useState(null);
-
-  const topApps = [
-    { name: 'ActiveCampaign', icon: '📧', category: 'Email Marketing' },
-    { name: 'Facebook Pages', icon: '👥', category: 'Social Media' },
-    { name: 'Google Calendar', icon: '📅', category: 'Productivity' },
-    { name: 'Google Contacts', icon: '👤', category: 'CRM' },
-    { name: 'Google Docs', icon: '📄', category: 'Documents' },
-    { name: 'Google Drive', icon: '💾', category: 'Storage' },
-    { name: 'Gmail', icon: '✉️', category: 'Email' },
-    { name: 'HubSpot', icon: '🎯', category: 'CRM' },
-    { name: 'Twilio', icon: '📱', category: 'Communication' },
-    { name: 'Google Sheets', icon: '📊', category: 'Spreadsheets' },
-    { name: 'Slack', icon: '💬', category: 'Communication' },
-    { name: 'Notion', icon: '📝', category: 'Productivity' }
-  ];
-
-  const builtInTools = [
-    { name: 'AI by Zapier', icon: '🤖', description: 'Use AI to automate tasks' },
-    { name: 'Filter', icon: '🔍', description: 'Filter data in your workflows' },
-    { name: 'Formatter', icon: '✨', description: 'Format your data' },
-    { name: 'Paths', icon: '🔀', description: 'Create conditional paths' },
-    { name: 'Delay', icon: '⏰', description: 'Add delays to your workflows' },
-    { name: 'Webhooks', icon: '🔗', description: 'Create and manage webhooks' },
-    { name: 'Code', icon: '💻', description: 'Run custom code' }
-  ];
-
-  const zapierProducts = [
-    { name: 'Chatbots', icon: '🤖', description: 'Build AI-powered chatbots' },
-    { name: 'Interfaces', icon: '🖥️', description: 'Create custom interfaces' },
-    { name: 'Tables', icon: '📊', description: 'Manage data in tables' }
-  ];
-
-  // Sample triggers and actions for each tool
-  const toolActions = {
-    'Facebook Lead Ads': {
-      triggers: [
-        { name: 'New Comment on Ad', description: 'Triggers when a new comment on an Ad is created', type: 'polling' },
-        { name: 'New Lead', description: 'Triggers when a new lead is created', type: 'instant' }
-      ],
-      actions: [
-        { name: 'Create Lead', description: 'Creates a new lead in Facebook' },
-        { name: 'Update Lead', description: 'Updates an existing lead' }
-      ]
-    },
-    'Flodesk': {
-      triggers: [
-        { name: 'New Subscriber', description: 'Triggers when a new subscriber is added' },
-        { name: 'Form Submission', description: 'Triggers when a form is submitted' }
-      ],
-      actions: [
-        { name: 'Add to Segment', description: 'Adds a subscriber to a segment' },
-        { name: 'Create/Update Subscriber', description: 'Creates or updates a subscriber' },
-        { name: 'Remove from Segment', description: 'Removes a subscriber from a segment' }
-      ]
-    },
-    'Twilio': {
-      triggers: [
-        { name: 'New SMS Received', description: 'Triggers when a new SMS is received' },
-        { name: 'Call Status Change', description: 'Triggers when a call status changes' }
-      ],
-      actions: [
-        { name: 'Send SMS', description: 'Sends an SMS message' },
-        { name: 'Make Call', description: 'Initiates a phone call' }
-      ]
-    }
-  };
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   useEffect(() => {
     fetchConnectedTools();
@@ -135,105 +341,82 @@ const IntegrationTools = () => {
     }
   };
 
-  const handleCreateWorkflow = () => {
-    setWorkflowModalVisible(true);
-    setCurrentStep(0);
+  const renderActionCard = (action) => (
+    <Card 
+      size="small" 
+      title={action.name}
+      extra={<Tag color={action.type === 'trigger' ? 'blue' : 'green'}>{action.type}</Tag>}
+      style={{ marginBottom: 16 }}
+    >
+      <p>{action.description}</p>
+      {action.fields.length > 0 && (
+        <div style={{ marginTop: 8 }}>
+          <Text type="secondary">Required fields: </Text>
+          {action.fields.map(field => (
+            <Tag key={field}>{field}</Tag>
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+
+  const getFilteredActions = () => {
+    const filtered = searchQuery
+      ? Object.entries(BUILT_IN_ACTIONS).reduce((acc, [category, actions]) => {
+          const filtered = actions.filter(action => 
+            (action.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            action.description.toLowerCase().includes(searchQuery.toLowerCase())) &&
+            connectedTools.some(tool => tool.name.toLowerCase() === action.tool.toLowerCase())
+          );
+          if (filtered.length > 0) {
+            acc[category] = filtered;
+          }
+          return acc;
+        }, {})
+      : Object.entries(BUILT_IN_ACTIONS).reduce((acc, [category, actions]) => {
+          const filtered = actions.filter(action => 
+            connectedTools.some(tool => tool.name.toLowerCase() === action.tool.toLowerCase())
+          );
+          if (filtered.length > 0) {
+            acc[category] = filtered;
+          }
+          return acc;
+        }, {});
+
+    return filtered;
   };
 
-  const renderTriggerSelection = () => {
-    if (!selectedTool) return null;
-    const tool = toolActions[selectedTool];
-    if (!tool) return null;
+  const getFilteredTriggers = () => {
+    const filtered = searchQuery
+      ? Object.entries(BUILT_IN_TRIGGERS).reduce((acc, [category, triggers]) => {
+          const filtered = triggers.filter(trigger => 
+            (trigger.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            trigger.description.toLowerCase().includes(searchQuery.toLowerCase())) &&
+            connectedTools.some(tool => tool.name.toLowerCase() === trigger.tool.toLowerCase())
+          );
+          if (filtered.length > 0) {
+            acc[category] = filtered;
+          }
+          return acc;
+        }, {})
+      : Object.entries(BUILT_IN_TRIGGERS).reduce((acc, [category, triggers]) => {
+          const filtered = triggers.filter(trigger => 
+            connectedTools.some(tool => tool.name.toLowerCase() === trigger.tool.toLowerCase())
+          );
+          if (filtered.length > 0) {
+            acc[category] = filtered;
+          }
+          return acc;
+        }, {});
 
-    return (
-      <div style={{ marginTop: 16 }}>
-        <Title level={5}>Select Trigger Event</Title>
-        <Search
-          placeholder="Search events"
-          style={{ marginBottom: 16 }}
-        />
-        <List
-          dataSource={tool.triggers}
-          renderItem={trigger => (
-            <List.Item
-              className={selectedTrigger?.name === trigger.name ? 'selected-item' : ''}
-              onClick={() => setSelectedTrigger(trigger)}
-              style={{ cursor: 'pointer', padding: '12px' }}
-            >
-              <List.Item.Meta
-                title={trigger.name}
-                description={trigger.description}
-              />
-              {trigger.type && (
-                <Tag color={trigger.type === 'instant' ? 'green' : 'blue'}>
-                  {trigger.type}
-                </Tag>
-              )}
-            </List.Item>
-          )}
-        />
-      </div>
-    );
-  };
-
-  const renderActionSelection = () => {
-    if (!selectedTool) return null;
-    const tool = toolActions[selectedTool];
-    if (!tool) return null;
-
-    return (
-      <div style={{ marginTop: 16 }}>
-        <Title level={5}>Select Action Event</Title>
-        <Search
-          placeholder="Search actions"
-          style={{ marginBottom: 16 }}
-        />
-        <List
-          dataSource={tool.actions}
-          renderItem={action => (
-            <List.Item
-              className={selectedAction?.name === action.name ? 'selected-item' : ''}
-              onClick={() => setSelectedAction(action)}
-              style={{ cursor: 'pointer', padding: '12px' }}
-            >
-              <List.Item.Meta
-                title={action.name}
-                description={action.description}
-              />
-            </List.Item>
-          )}
-        />
-      </div>
-    );
-  };
-
-  const renderToolStatus = (status) => {
-    const statusColors = {
-      connected: '#52c41a',
-      disconnected: '#ff4d4f',
-      error: '#faad14'
-    };
-
-    return (
-      <Badge 
-        status="processing" 
-        color={statusColors[status.toLowerCase()]} 
-        text={status} 
-      />
-    );
-  };
-
-  const renderLastSync = (lastSync) => {
-    if (!lastSync) return 'Never';
-    const date = new Date(lastSync);
-    return date.toLocaleString();
+    return filtered;
   };
 
   return (
     <div style={{ padding: '24px' }}>
       <Card>
         <Tabs defaultActiveKey="tools">
-          <TabPane 
+          <TabPane
             tab={
               <span>
                 <ApiOutlined /> Connected Tools
@@ -291,14 +474,16 @@ const IntegrationTools = () => {
                     title={
                       <Space>
                         {tool.name}
-                        {renderToolStatus(tool.status)}
+                        <Badge 
+                          status={tool.status === 'connected' ? 'success' : 'error'} 
+                          text={tool.status} 
+                        />
                       </Space>
                     }
                     description={
                       <Space direction="vertical">
                         <Text>Category: {tool.category}</Text>
-                        <Text>Last Sync: {renderLastSync(tool.lastSync)}</Text>
-                        <Text>Available Actions: {tool.actions?.length || 0}</Text>
+                        <Text>Last Sync: {tool.lastSync ? new Date(tool.lastSync).toLocaleString() : 'Never'}</Text>
                       </Space>
                     }
                   />
@@ -318,116 +503,43 @@ const IntegrationTools = () => {
             <div style={{ marginBottom: 24 }}>
               <Space direction="vertical" style={{ width: '100%' }}>
                 <Space>
-                  <Button 
-                    type="primary" 
-                    icon={<PlusOutlined />}
-                    onClick={handleCreateWorkflow}
-                  >
-                    Create Workflow
-                  </Button>
                   <Search
-                    placeholder="Search workflows..."
+                    placeholder="Search actions and triggers..."
+                    onChange={e => setSearchQuery(e.target.value)}
                     style={{ width: 300 }}
                   />
                 </Space>
                 <Text type="secondary">
-                  Create and manage your automated workflows using your connected tools
+                  Built-in actions and triggers that automatically sync with connected tools
                 </Text>
               </Space>
             </div>
 
-            <List
-              grid={{ gutter: 16, column: 3 }}
-              dataSource={connectedTools}
-              renderItem={tool => (
-                <List.Item>
-                  <Card size="small" hoverable>
-                    <Space align="start">
-                      <img 
-                        src={tool.icon} 
-                        alt={tool.name} 
-                        style={{ width: 40, height: 40 }} 
-                      />
-                      <div>
-                        <div style={{ fontWeight: 'bold' }}>{tool.name}</div>
-                        <Text type="secondary">
-                          {toolActions[tool.name]?.triggers.length || 0} Triggers, {' '}
-                          {toolActions[tool.name]?.actions.length || 0} Actions
-                        </Text>
-                      </div>
-                    </Space>
-                  </Card>
-                </List.Item>
-              )}
-            />
+            <Row gutter={24}>
+              <Col span={12}>
+                <Title level={4}>Actions</Title>
+                <Collapse defaultActiveKey={Object.keys(BUILT_IN_ACTIONS)}>
+                  {Object.entries(getFilteredActions()).map(([category, actions]) => (
+                    <Panel header={category} key={category}>
+                      {actions.map(action => renderActionCard(action))}
+                    </Panel>
+                  ))}
+                </Collapse>
+              </Col>
+              <Col span={12}>
+                <Title level={4}>Triggers</Title>
+                <Collapse defaultActiveKey={Object.keys(BUILT_IN_TRIGGERS)}>
+                  {Object.entries(getFilteredTriggers()).map(([category, triggers]) => (
+                    <Panel header={category} key={category}>
+                      {triggers.map(trigger => renderActionCard(trigger))}
+                    </Panel>
+                  ))}
+                </Collapse>
+              </Col>
+            </Row>
           </TabPane>
         </Tabs>
       </Card>
-
-      <Modal
-        title="Create New Workflow"
-        open={workflowModalVisible}
-        onCancel={() => {
-          setWorkflowModalVisible(false);
-          setSelectedTool(null);
-          setSelectedTrigger(null);
-          setSelectedAction(null);
-          setCurrentStep(0);
-        }}
-        width={800}
-        footer={[
-          <Button key="back" onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}>
-            Previous
-          </Button>,
-          <Button 
-            key="next" 
-            type="primary"
-            onClick={() => setCurrentStep(currentStep + 1)}
-            disabled={
-              (currentStep === 0 && !selectedTool) ||
-              (currentStep === 1 && !selectedTrigger) ||
-              (currentStep === 2 && !selectedAction)
-            }
-          >
-            {currentStep === 2 ? 'Create' : 'Next'}
-          </Button>
-        ]}
-      >
-        <Steps current={currentStep} style={{ marginBottom: 24 }}>
-          <Step title="Select Tool" />
-          <Step title="Choose Trigger" />
-          <Step title="Add Action" />
-        </Steps>
-
-        {currentStep === 0 && (
-          <div>
-            <Title level={5}>Select Tool</Title>
-            <Select
-              style={{ width: '100%' }}
-              placeholder="Choose a tool"
-              value={selectedTool}
-              onChange={setSelectedTool}
-            >
-              {connectedTools.map(tool => (
-                <Option key={tool.name} value={tool.name}>
-                  <Space>
-                    <img 
-                      src={tool.icon} 
-                      alt={tool.name} 
-                      style={{ width: 20, height: 20 }} 
-                    />
-                    {tool.name}
-                  </Space>
-                </Option>
-              ))}
-            </Select>
-            {renderTriggerSelection()}
-          </div>
-        )}
-
-        {currentStep === 1 && renderTriggerSelection()}
-        {currentStep === 2 && renderActionSelection()}
-      </Modal>
     </div>
   );
 };

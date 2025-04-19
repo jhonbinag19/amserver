@@ -44,148 +44,18 @@ const AUTH_TYPES = {
 };
 
 const CATEGORIES = {
-  'CRM & Sales': {
-    icon: '👥',
-    subcategories: ['CRM', 'Contact Management', 'Sales Pipeline', 'Lead Generation']
-  },
-  'Marketing & Email': {
+  'Marketing Tools': {
     icon: '📧',
-    subcategories: ['Email Marketing', 'Marketing Automation', 'Social Media Marketing', 'Ads & Conversion']
-  },
-  'Payment & Finance': {
-    icon: '💰',
-    subcategories: ['Payment Processing', 'Accounting', 'Invoicing', 'Taxes']
-  },
-  'Communication': {
-    icon: '💬',
-    subcategories: ['Email', 'SMS', 'Team Chat', 'Video Conferencing']
-  },
-  'Project Management': {
-    icon: '📋',
-    subcategories: ['Task Management', 'Project Tracking', 'Team Collaboration', 'Time Tracking']
-  },
-  'Analytics & Tracking': {
-    icon: '📊',
-    subcategories: ['Web Analytics', 'User Tracking', 'Conversion Tracking', 'Performance Monitoring']
-  },
-  'E-commerce': {
-    icon: '🛒',
-    subcategories: ['Online Store', 'Inventory Management', 'Order Processing', 'Customer Support']
-  },
-  'Forms & Surveys': {
-    icon: '📝',
-    subcategories: ['Form Builder', 'Survey Tools', 'Lead Capture', 'Feedback Collection']
-  },
-  'File Storage': {
-    icon: '📁',
-    subcategories: ['Cloud Storage', 'Document Management', 'File Sharing', 'Backup']
-  },
-  'Calendar & Scheduling': {
-    icon: '📅',
-    subcategories: ['Appointment Scheduling', 'Calendar Management', 'Meeting Booking', 'Availability']
+    subcategories: ['Email Marketing', 'Marketing Automation']
   }
 };
 
 const INTEGRATION_OPTIONS = [
-  // CRM & Sales
   {
-    value: 'gohighlevel',
-    label: 'GoHighLevel',
-    category: 'CRM & Sales',
-    subcategory: 'CRM',
-    authType: AUTH_TYPES.OAUTH,
-    fields: []
-  },
-  {
-    value: 'hubspot',
-    label: 'HubSpot',
-    category: 'CRM & Sales',
-    subcategory: 'CRM',
-    authType: AUTH_TYPES.OAUTH,
-    fields: []
-  },
-  {
-    value: 'salesforce',
-    label: 'Salesforce',
-    category: 'CRM & Sales',
-    subcategory: 'CRM',
-    authType: AUTH_TYPES.OAUTH,
-    fields: []
-  },
-  {
-    value: 'pipedrive',
-    label: 'Pipedrive',
-    category: 'CRM & Sales',
-    subcategory: 'Sales Pipeline',
-    authType: AUTH_TYPES.API_KEY,
-    fields: [
-      {
-        name: 'api_key',
-        label: 'API Key',
-        type: 'password',
-        required: true
-      }
-    ]
-  },
-  {
-    value: 'zoho_crm',
-    label: 'Zoho CRM',
-    category: 'CRM & Sales',
-    subcategory: 'CRM',
-    authType: AUTH_TYPES.OAUTH,
-    fields: []
-  },
-  {
-    value: 'freshsales',
-    label: 'Freshsales',
-    category: 'CRM & Sales',
-    subcategory: 'CRM',
-    authType: AUTH_TYPES.API_KEY,
-    fields: [
-      {
-        name: 'api_key',
-        label: 'API Key',
-        type: 'password',
-        required: true
-      },
-      {
-        name: 'domain',
-        label: 'Domain',
-        type: 'text',
-        required: true
-      }
-    ]
-  },
-  {
-    value: 'insightly',
-    label: 'Insightly',
-    category: 'CRM & Sales',
-    subcategory: 'CRM',
-    authType: AUTH_TYPES.API_KEY,
-    fields: [
-      {
-        name: 'api_key',
-        label: 'API Key',
-        type: 'password',
-        required: true
-      }
-    ]
-  },
-
-  // Marketing & Email
-  {
-    value: 'mailchimp',
-    label: 'Mailchimp',
-    category: 'Marketing & Email',
+    value: 'flodesk',
+    label: 'Flodesk',
+    category: 'Marketing Tools',
     subcategory: 'Email Marketing',
-    authType: AUTH_TYPES.OAUTH,
-    fields: []
-  },
-  {
-    value: 'activecampaign',
-    label: 'ActiveCampaign',
-    category: 'Marketing & Email',
-    subcategory: 'Marketing Automation',
     authType: AUTH_TYPES.API_KEY,
     fields: [
       {
@@ -193,19 +63,13 @@ const INTEGRATION_OPTIONS = [
         label: 'API Key',
         type: 'password',
         required: true
-      },
-      {
-        name: 'api_url',
-        label: 'API URL',
-        type: 'text',
-        required: true
       }
     ]
   },
   {
-    value: 'klaviyo',
-    label: 'Klaviyo',
-    category: 'Marketing & Email',
+    value: 'instantly',
+    label: 'Instantly.ai',
+    category: 'Marketing Tools',
     subcategory: 'Email Marketing',
     authType: AUTH_TYPES.API_KEY,
     fields: [
@@ -220,7 +84,7 @@ const INTEGRATION_OPTIONS = [
   {
     value: 'convertkit',
     label: 'ConvertKit',
-    category: 'Marketing & Email',
+    category: 'Marketing Tools',
     subcategory: 'Email Marketing',
     authType: AUTH_TYPES.API_KEY,
     fields: [
@@ -233,9 +97,9 @@ const INTEGRATION_OPTIONS = [
     ]
   },
   {
-    value: 'drip',
-    label: 'Drip',
-    category: 'Marketing & Email',
+    value: 'klaviyo',
+    label: 'Klaviyo',
+    category: 'Marketing Tools',
     subcategory: 'Email Marketing',
     authType: AUTH_TYPES.API_KEY,
     fields: [
@@ -248,10 +112,10 @@ const INTEGRATION_OPTIONS = [
     ]
   },
   {
-    value: 'sendinblue',
-    label: 'Sendinblue',
-    category: 'Marketing & Email',
-    subcategory: 'Email Marketing',
+    value: 'activecampaign',
+    label: 'ActiveCampaign',
+    category: 'Marketing Tools',
+    subcategory: 'Marketing Automation',
     authType: AUTH_TYPES.API_KEY,
     fields: [
       {
@@ -259,463 +123,11 @@ const INTEGRATION_OPTIONS = [
         label: 'API Key',
         type: 'password',
         required: true
-      }
-    ]
-  },
-
-  // Payment & Finance
-  {
-    value: 'stripe',
-    label: 'Stripe',
-    category: 'Payment & Finance',
-    subcategory: 'Payment Processing',
-    authType: AUTH_TYPES.API_KEY_SECRET,
-    fields: [
-      {
-        name: 'api_key',
-        label: 'API Key',
-        type: 'password',
-        required: true
       },
       {
-        name: 'api_secret',
-        label: 'API Secret',
-        type: 'password',
-        required: true
-      }
-    ]
-  },
-  {
-    value: 'paypal',
-    label: 'PayPal',
-    category: 'Payment & Finance',
-    subcategory: 'Payment Processing',
-    authType: AUTH_TYPES.API_KEY_SECRET,
-    fields: [
-      {
-        name: 'client_id',
-        label: 'Client ID',
-        type: 'password',
-        required: true
-      },
-      {
-        name: 'client_secret',
-        label: 'Client Secret',
-        type: 'password',
-        required: true
-      }
-    ]
-  },
-  {
-    value: 'square',
-    label: 'Square',
-    category: 'Payment & Finance',
-    subcategory: 'Payment Processing',
-    authType: AUTH_TYPES.OAUTH,
-    fields: []
-  },
-  {
-    value: 'quickbooks',
-    label: 'QuickBooks',
-    category: 'Payment & Finance',
-    subcategory: 'Accounting',
-    authType: AUTH_TYPES.OAUTH,
-    fields: []
-  },
-  {
-    value: 'xero',
-    label: 'Xero',
-    category: 'Payment & Finance',
-    subcategory: 'Accounting',
-    authType: AUTH_TYPES.OAUTH,
-    fields: []
-  },
-
-  // Communication
-  {
-    value: 'twilio',
-    label: 'Twilio',
-    category: 'Communication',
-    subcategory: 'SMS',
-    authType: AUTH_TYPES.API_KEY_SECRET,
-    fields: [
-      {
-        name: 'account_sid',
-        label: 'Account SID',
-        type: 'password',
-        required: true
-      },
-      {
-        name: 'auth_token',
-        label: 'Auth Token',
-        type: 'password',
-        required: true
-      }
-    ]
-  },
-  {
-    value: 'slack',
-    label: 'Slack',
-    category: 'Communication',
-    subcategory: 'Team Chat',
-    authType: AUTH_TYPES.OAUTH,
-    fields: []
-  },
-  {
-    value: 'discord',
-    label: 'Discord',
-    category: 'Communication',
-    subcategory: 'Team Chat',
-    authType: AUTH_TYPES.BOT_TOKEN,
-    fields: [
-      {
-        name: 'bot_token',
-        label: 'Bot Token',
-        type: 'password',
-        required: true
-      }
-    ]
-  },
-  {
-    value: 'telegram',
-    label: 'Telegram',
-    category: 'Communication',
-    subcategory: 'Team Chat',
-    authType: AUTH_TYPES.BOT_TOKEN,
-    fields: [
-      {
-        name: 'bot_token',
-        label: 'Bot Token',
-        type: 'password',
-        required: true
-      }
-    ]
-  },
-
-  // Social Media
-  {
-    value: 'facebook',
-    label: 'Facebook',
-    category: 'Social Media',
-    subcategory: 'Social Media Marketing',
-    authType: AUTH_TYPES.OAUTH,
-    fields: []
-  },
-  {
-    value: 'instagram',
-    label: 'Instagram',
-    category: 'Social Media',
-    subcategory: 'Social Media Marketing',
-    authType: AUTH_TYPES.OAUTH,
-    fields: []
-  },
-  {
-    value: 'linkedin',
-    label: 'LinkedIn',
-    category: 'Social Media',
-    subcategory: 'Social Media Marketing',
-    authType: AUTH_TYPES.OAUTH,
-    fields: []
-  },
-  {
-    value: 'twitter',
-    label: 'Twitter',
-    category: 'Social Media',
-    subcategory: 'Social Media Marketing',
-    authType: AUTH_TYPES.API_KEY_SECRET,
-    fields: [
-      {
-        name: 'api_key',
-        label: 'API Key',
-        type: 'password',
-        required: true
-      },
-      {
-        name: 'api_secret',
-        label: 'API Secret',
-        type: 'password',
-        required: true
-      }
-    ]
-  },
-  {
-    value: 'tiktok',
-    label: 'TikTok',
-    category: 'Social Media',
-    subcategory: 'Social Media Marketing',
-    authType: AUTH_TYPES.OAUTH,
-    fields: []
-  },
-
-  // Project Management
-  {
-    value: 'asana',
-    label: 'Asana',
-    category: 'Project Management',
-    subcategory: 'Task Management',
-    authType: AUTH_TYPES.OAUTH,
-    fields: []
-  },
-  {
-    value: 'trello',
-    label: 'Trello',
-    category: 'Project Management',
-    subcategory: 'Task Management',
-    authType: AUTH_TYPES.OAUTH,
-    fields: []
-  },
-  {
-    value: 'monday',
-    label: 'Monday.com',
-    category: 'Project Management',
-    subcategory: 'Project Tracking',
-    authType: AUTH_TYPES.API_KEY,
-    fields: [
-      {
-        name: 'api_key',
-        label: 'API Key',
-        type: 'password',
-        required: true
-      }
-    ]
-  },
-  {
-    value: 'clickup',
-    label: 'ClickUp',
-    category: 'Project Management',
-    subcategory: 'Project Tracking',
-    authType: AUTH_TYPES.API_KEY,
-    fields: [
-      {
-        name: 'api_key',
-        label: 'API Key',
-        type: 'password',
-        required: true
-      }
-    ]
-  },
-
-  // Analytics & Tracking
-  {
-    value: 'google_analytics',
-    label: 'Google Analytics',
-    category: 'Analytics & Tracking',
-    subcategory: 'Web Analytics',
-    authType: AUTH_TYPES.OAUTH,
-    fields: []
-  },
-  {
-    value: 'facebook_pixel',
-    label: 'Facebook Pixel',
-    category: 'Analytics & Tracking',
-    subcategory: 'Conversion Tracking',
-    authType: AUTH_TYPES.CUSTOM,
-    fields: [
-      {
-        name: 'pixel_id',
-        label: 'Pixel ID',
+        name: 'api_url',
+        label: 'API URL',
         type: 'text',
-        required: true
-      }
-    ]
-  },
-  {
-    value: 'mixpanel',
-    label: 'Mixpanel',
-    category: 'Analytics & Tracking',
-    subcategory: 'User Tracking',
-    authType: AUTH_TYPES.API_KEY,
-    fields: [
-      {
-        name: 'api_key',
-        label: 'API Key',
-        type: 'password',
-        required: true
-      }
-    ]
-  },
-  {
-    value: 'amplitude',
-    label: 'Amplitude',
-    category: 'Analytics & Tracking',
-    subcategory: 'User Tracking',
-    authType: AUTH_TYPES.API_KEY,
-    fields: [
-      {
-        name: 'api_key',
-        label: 'API Key',
-        type: 'password',
-        required: true
-      }
-    ]
-  },
-
-  // E-commerce
-  {
-    value: 'shopify',
-    label: 'Shopify',
-    category: 'E-commerce',
-    subcategory: 'Online Store',
-    authType: AUTH_TYPES.API_KEY,
-    fields: [
-      {
-        name: 'api_key',
-        label: 'API Key',
-        type: 'password',
-        required: true
-      },
-      {
-        name: 'store_name',
-        label: 'Store Name',
-        type: 'text',
-        required: true
-      }
-    ]
-  },
-  {
-    value: 'woocommerce',
-    label: 'WooCommerce',
-    category: 'E-commerce',
-    subcategory: 'Online Store',
-    authType: AUTH_TYPES.API_KEY,
-    fields: [
-      {
-        name: 'consumer_key',
-        label: 'Consumer Key',
-        type: 'password',
-        required: true
-      },
-      {
-        name: 'consumer_secret',
-        label: 'Consumer Secret',
-        type: 'password',
-        required: true
-      }
-    ]
-  },
-  {
-    value: 'bigcommerce',
-    label: 'BigCommerce',
-    category: 'E-commerce',
-    subcategory: 'Online Store',
-    authType: AUTH_TYPES.API_KEY,
-    fields: [
-      {
-        name: 'client_id',
-        label: 'Client ID',
-        type: 'password',
-        required: true
-      },
-      {
-        name: 'client_secret',
-        label: 'Client Secret',
-        type: 'password',
-        required: true
-      }
-    ]
-  },
-
-  // Forms & Surveys
-  {
-    value: 'typeform',
-    label: 'Typeform',
-    category: 'Forms & Surveys',
-    subcategory: 'Form Builder',
-    authType: AUTH_TYPES.API_KEY,
-    fields: [
-      {
-        name: 'api_key',
-        label: 'API Key',
-        type: 'password',
-        required: true
-      }
-    ]
-  },
-  {
-    value: 'google_forms',
-    label: 'Google Forms',
-    category: 'Forms & Surveys',
-    subcategory: 'Form Builder',
-    authType: AUTH_TYPES.OAUTH,
-    fields: []
-  },
-  {
-    value: 'jotform',
-    label: 'JotForm',
-    category: 'Forms & Surveys',
-    subcategory: 'Form Builder',
-    authType: AUTH_TYPES.API_KEY,
-    fields: [
-      {
-        name: 'api_key',
-        label: 'API Key',
-        type: 'password',
-        required: true
-      }
-    ]
-  },
-
-  // File Storage
-  {
-    value: 'google_drive',
-    label: 'Google Drive',
-    category: 'File Storage',
-    subcategory: 'Cloud Storage',
-    authType: AUTH_TYPES.OAUTH,
-    fields: []
-  },
-  {
-    value: 'dropbox',
-    label: 'Dropbox',
-    category: 'File Storage',
-    subcategory: 'Cloud Storage',
-    authType: AUTH_TYPES.OAUTH,
-    fields: []
-  },
-  {
-    value: 'onedrive',
-    label: 'OneDrive',
-    category: 'File Storage',
-    subcategory: 'Cloud Storage',
-    authType: AUTH_TYPES.OAUTH,
-    fields: []
-  },
-
-  // Calendar & Scheduling
-  {
-    value: 'google_calendar',
-    label: 'Google Calendar',
-    category: 'Calendar & Scheduling',
-    subcategory: 'Calendar Management',
-    authType: AUTH_TYPES.OAUTH,
-    fields: []
-  },
-  {
-    value: 'calendly',
-    label: 'Calendly',
-    category: 'Calendar & Scheduling',
-    subcategory: 'Appointment Scheduling',
-    authType: AUTH_TYPES.API_KEY,
-    fields: [
-      {
-        name: 'api_key',
-        label: 'API Key',
-        type: 'password',
-        required: true
-      }
-    ]
-  },
-  {
-    value: 'acuity',
-    label: 'Acuity Scheduling',
-    category: 'Calendar & Scheduling',
-    subcategory: 'Appointment Scheduling',
-    authType: AUTH_TYPES.API_KEY,
-    fields: [
-      {
-        name: 'api_key',
-        label: 'API Key',
-        type: 'password',
         required: true
       }
     ]
@@ -743,7 +155,7 @@ const ApiConnection = () => {
 
   const checkConnection = async () => {
     try {
-      const response = await axios.get('/api/ghl/organizations/:organizationId/connection-status');
+      const response = await axios.get('/api/users/integrations/connection/status');
       setConnectionStatus(response.data);
     } catch (error) {
       message.error('Failed to check connection status');
@@ -753,7 +165,7 @@ const ApiConnection = () => {
   const fetchConnectedTools = async () => {
     try {
       setToolsLoading(true);
-      const response = await axios.get('/api/integrations/tools');
+      const response = await axios.get('/api/users/integrations/tools');
       setConnectedTools(response.data);
     } catch (error) {
       message.error('Failed to fetch connected tools');
@@ -771,7 +183,7 @@ const ApiConnection = () => {
   const handleApiSubmit = async (values) => {
     try {
       setLoading(true);
-      const response = await axios.post('/api/ghl/organizations/:organizationId/connect', {
+      const response = await axios.post('/api/users/integrations/connect', {
         ...values,
         integration_type: selectedIntegration.value,
         auth_type: authType
@@ -788,7 +200,7 @@ const ApiConnection = () => {
 
   const handleOAuthConnect = async () => {
     try {
-      const response = await axios.get(`/api/ghl/oauth/authorize?integration=${selectedIntegration.value}`);
+      const response = await axios.get(`/api/users/integrations/oauth/authorize?integration=${selectedIntegration.value}`);
       window.location.href = response.data.authorizationUrl;
     } catch (error) {
       message.error('Failed to initiate OAuth connection');
@@ -797,7 +209,7 @@ const ApiConnection = () => {
 
   const handleDisconnect = async () => {
     try {
-      await axios.post('/api/ghl/organizations/:organizationId/disconnect');
+      await axios.post('/api/users/integrations/disconnect');
       message.success('Connection disconnected successfully');
       setConnectionStatus(null);
       setConnectedTools([]);

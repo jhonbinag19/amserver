@@ -34,17 +34,17 @@ const Sidebar = () => {
       label: 'Integrations',
       children: [
         {
-          key: 'users/integrations/connection',
+          key: 'ghl/connection',
           icon: <LinkOutlined />,
           label: 'GHL Connection',
         },
         {
-          key: 'users/integrations/agency',
+          key: 'ghl/agency',
           icon: <BankOutlined />,
           label: 'Agency Accounts',
         },
         {
-          key: 'users/integrations/tools',
+          key: 'tools',
           icon: <ToolOutlined />,
           label: (
             <Badge offset={[10, 0]} dot>
@@ -55,7 +55,7 @@ const Sidebar = () => {
       ]
     },
     {
-      key: 'users/settings',
+      key: 'settings',
       icon: <SettingOutlined />,
       label: 'Settings',
     }

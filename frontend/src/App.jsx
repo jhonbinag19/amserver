@@ -7,7 +7,7 @@ import Settings from './pages/user/settings/Settings';
 import Schema from './pages/admin/schema';
 import ApiConnection from './components/ghl/ApiConnection';
 import AgencyAccounts from './components/ghl/AgencyAccounts';
-import DashboardLayout from './components/layout/DashboardLayout';
+import DashboardLayout from './components/userLayout/DashboardLayout';
 import { isAuthenticated } from './services/auth';
 import IntegrationTools from './pages/user/IntegrationTools';
 import WorkflowActions from './components/workflow/WorkflowActions';
@@ -52,15 +52,19 @@ const App = () => {
           >
             <Route index element={<Navigate to="/dashboard" />} />
             <Route path="dashboard" element={<Dashboard />} />
-            <Route path="settings" element={<Settings />} />
+            
+            {/* User Routes */}
+            <Route path="users">
+              <Route path="settings" element={<Settings />} />
+              <Route path="integrations">
+                <Route path="connection" element={<ApiConnection />} />
+                <Route path="agency" element={<AgencyAccounts />} />
+                <Route path="tools" element={<IntegrationTools />} />
+              </Route>
+            </Route>
+            
+            {/* Admin Routes */}
             <Route path="schema" element={<Schema />} />
-            
-            {/* GHL Integration Routes */}
-            <Route path="ghl/connection" element={<ApiConnection />} />
-            <Route path="ghl/agency" element={<AgencyAccounts />} />
-            
-            {/* Integration Tools Routes */}
-            <Route path="tools" element={<IntegrationTools />} />
             <Route path="workflows" element={<WorkflowActions />} />
           </Route>
           <Route path="*" element={<Navigate to="/login" />} />
