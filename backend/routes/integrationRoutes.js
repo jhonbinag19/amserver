@@ -1,30 +1,24 @@
 const express = require('express');
 const router = express.Router();
+const { authenticateUser } = require('../middleware/auth');
 const integrationController = require('../controllers/integrationController');
-const authMiddleware = require('../middleware/authMiddleware');
 
-// Apply authentication middleware to all routes
-router.use(authMiddleware);
+// Get all available tools
+router.get('/tools', authenticateUser, integrationController.getTools);
 
-// Get all available integrations
-router.get('/', integrationController.getAllIntegrations);
+// Get GHL sub-accounts
+router.get('/ghl/sub-accounts', authenticateUser, integrationController.getGHLSubAccounts);
 
-// Get integration by ID
-router.get('/:id', integrationController.getIntegrationById);
+// Get GHL connection status
+router.get('/ghl/status', authenticateUser, integrationController.getGHLStatus);
 
-// Get organization's integration connections
-router.get('/organizations/:organizationId/connections', integrationController.getOrganizationConnections);
+// Install tool for sub-accounts
+router.post('/:toolId/install', authenticateUser, integrationController.installToolForSubAccounts);
 
-// Connect an integration to an organization
-router.post('/organizations/:organizationId/connect/:integrationId', integrationController.connectIntegration);
+// Get installed tools
+router.get('/installed', authenticateUser, integrationController.getInstalledTools);
 
-// Disconnect an integration from an organization
-router.post('/organizations/:organizationId/disconnect/:integrationId', integrationController.disconnectIntegration);
-
-// Get integration connection status
-router.get('/organizations/:organizationId/connection-status/:integrationId', integrationController.getConnectionStatus);
-
-// Update integration connection status
-router.put('/organizations/:organizationId/connection-status/:integrationId', integrationController.updateConnectionStatus);
+// Disconnect tool
+router.post('/:toolId/disconnect', authenticateUser, integrationController.disconnectTool);
 
 module.exports = router; 

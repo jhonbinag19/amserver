@@ -1,20 +1,15 @@
-import React from 'react';
-import { Layout, Menu, Typography } from 'antd';
+import React, { useState } from 'react';
+import { Layout, Menu, Typography, Badge } from 'antd';
 import {
   DashboardOutlined,
-  UserOutlined,
-  TeamOutlined,
   SettingOutlined,
   ApiOutlined,
   AppstoreOutlined,
   LogoutOutlined,
-  CrownOutlined,
-  ArrowUpOutlined,
-  BankOutlined,
-  ApartmentOutlined,
-  ToolOutlined,
   LinkOutlined,
-  BranchesOutlined
+  BankOutlined,
+  ToolOutlined,
+  ApartmentOutlined
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { logout } from '../../services/auth';
@@ -25,6 +20,7 @@ const { Text } = Typography;
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [openKeys, setOpenKeys] = useState(['integrations']);
 
   const mainMenuItems = [
     {
@@ -33,24 +29,14 @@ const Sidebar = () => {
       label: 'Dashboard',
     },
     {
-      key: 'users',
-      icon: <UserOutlined />,
-      label: 'Users',
-    },
-    {
-      key: 'roles',
-      icon: <TeamOutlined />,
-      label: 'Roles & Permissions',
-    },
-    {
-      key: 'ghl',
+      key: 'integrations',
       icon: <ApiOutlined />,
-      label: 'GHL Integration',
+      label: 'Integrations',
       children: [
         {
           key: 'ghl/connection',
           icon: <LinkOutlined />,
-          label: 'API Connection',
+          label: 'GHL Connection',
         },
         {
           key: 'ghl/agency',
@@ -58,31 +44,15 @@ const Sidebar = () => {
           label: 'Agency Accounts',
         },
         {
-          key: 'ghl/sub-accounts',
-          icon: <ApartmentOutlined />,
-          label: 'Sub Accounts',
-        },
-        {
-          key: 'ghl/workflows',
-          icon: <AppstoreOutlined />,
-          label: 'Integration Workflows',
-        },
-        {
-          key: 'ghl/billing',
-          icon: <CrownOutlined />,
-          label: 'Payment & Billing',
-        },
-        {
-          key: 'ghl/settings',
+          key: 'tools',
           icon: <ToolOutlined />,
-          label: 'Integration Settings',
+          label: (
+            <Badge offset={[10, 0]} dot>
+              Integration Tools
+            </Badge>
+          ),
         }
       ]
-    },
-    {
-      key: 'workflows',
-      icon: <AppstoreOutlined />,
-      label: 'Workflows',
     },
     {
       key: 'settings',
@@ -92,26 +62,6 @@ const Sidebar = () => {
   ];
 
   const bottomMenuItems = [
-    {
-      key: 'subscription',
-      icon: <CrownOutlined />,
-      label: 'Subscription',
-      children: [
-        {
-          key: 'subscription/plans',
-          label: 'Plans & Pricing',
-        },
-        {
-          key: 'subscription/billing',
-          label: 'Billing History',
-        },
-        {
-          key: 'subscription/upgrade',
-          label: 'Upgrade Plan',
-          icon: <ArrowUpOutlined />,
-        }
-      ]
-    },
     {
       key: 'logout',
       icon: <LogoutOutlined />,
@@ -123,8 +73,9 @@ const Sidebar = () => {
     }
   ];
 
-  // Get the current path segment after the first slash
-  const currentPath = location.pathname.split('/')[1] || 'dashboard';
+  const handleOpenChange = (keys) => {
+    setOpenKeys(keys);
+  };
 
   return (
     <Sider
@@ -161,7 +112,8 @@ const Sidebar = () => {
         <Menu
           mode="inline"
           selectedKeys={[location.pathname.replace('/', '')]}
-          openKeys={['ghl', 'subscription']}
+          openKeys={openKeys}
+          onOpenChange={handleOpenChange}
           style={{ 
             borderRight: 0,
             flex: 1,
@@ -178,11 +130,7 @@ const Sidebar = () => {
             marginTop: 'auto'
           }}
           items={bottomMenuItems}
-          onClick={({ key }) => {
-            if (!key.includes('subscription')) {
-              navigate(`/${key}`);
-            }
-          }}
+          onClick={({ key }) => navigate(`/${key}`)}
         />
       </div>
     </Sider>

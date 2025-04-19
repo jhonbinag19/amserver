@@ -1,48 +1,70 @@
-const { User, Role, Permission, RolePermission } = require('../database/models');
+const { Role } = require('../models');
 
 const checkPermission = (resource, action) => {
   return async (req, res, next) => {
     try {
-      const user = await User.findByPk(req.user.id, {
-        include: [{
-          model: Role,
-          include: [{
-            model: Permission,
-            through: RolePermission
-          }]
-        }]
-      });
+      const user = req.user;
 
-      if (!user) {
-        return res.status(401).json({ message: 'User not found' });
-      }
-
-      // Check if user has admin role
-      const isAdmin = user.Roles.some(role => role.isAdmin);
-      if (isAdmin) {
+      // Admin has full access
+      if (user.role === 'admin') {
         return next();
       }
 
-      // Check if user has the required permission
-      const hasPermission = user.Roles.some(role => 
-        role.Permissions.some(permission => 
-          permission.resource === resource && 
-          (permission.action === action || permission.action === 'manage')
-        )
+      // Get user's role with permissions
+      const role = await Role.findById(user.roleId).populate('permissions');
+      
+      if (!role) {
+        return res.status(403).json({ error: 'Role not found' });
+      }
+
+      // Check if role has the required permission
+      const hasPermission = role.permissions.some(permission => 
+        permission.resource === resource && 
+        permission.actions.includes(action)
       );
 
       if (!hasPermission) {
         return res.status(403).json({ 
-          message: `You don't have permission to ${action} ${resource}` 
+          error: 'Insufficient permissions',
+          message: `You don't have permission to ${action} ${resource}`
         });
       }
 
       next();
     } catch (error) {
-      console.error('Permission check error:', error);
-      res.status(500).json({ message: 'Internal server error' });
+      console.error('Permission middleware error:', error);
+      return res.status(500).json({ error: 'Internal server error' });
     }
   };
 };
 
-module.exports = checkPermission; 
+const checkUserAccess = (resourceId) => {
+  return async (req, res, next) => {
+    try {
+      const user = req.user;
+
+      // Admin has full access
+      if (user.role === 'admin') {
+        return next();
+      }
+
+      // For users, check if they own the resource
+      if (req.params[resourceId] && req.params[resourceId] !== user.id) {
+        return res.status(403).json({ 
+          error: 'Access denied',
+          message: 'You can only access your own resources'
+        });
+      }
+
+      next();
+    } catch (error) {
+      console.error('User access middleware error:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  };
+};
+
+module.exports = {
+  checkPermission,
+  checkUserAccess
+}; 

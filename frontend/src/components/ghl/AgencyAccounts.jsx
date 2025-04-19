@@ -3,169 +3,161 @@ import {
   Card,
   Table,
   Button,
-  Modal,
-  Form,
-  Input,
   message,
   Space,
   Tag,
-  Popconfirm
+  Alert,
+  Typography,
+  Spin
 } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { SyncOutlined, LinkOutlined } from '@ant-design/icons';
 import axios from 'axios';
 
+const { Title, Text } = Typography;
+
 const AgencyAccounts = () => {
-  const [agencies, setAgencies] = useState([]);
+  const [agency, setAgency] = useState(null);
+  const [subAccounts, setSubAccounts] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [form] = Form.useForm();
+  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
-    fetchAgencies();
+    checkConnection();
   }, []);
 
-  const fetchAgencies = async () => {
+  const checkConnection = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/ghl/organizations/:organizationId/agency-accounts');
-      setAgencies(response.data);
+      const response = await axios.get('/api/ghl/connection/status');
+      if (response.data.connected) {
+        setAgency(response.data.agency);
+        fetchSubAccounts();
+      }
     } catch (error) {
-      message.error('Failed to fetch agency accounts');
+      message.error('Failed to check connection status');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSubmit = async (values) => {
+  const fetchSubAccounts = async () => {
     try {
-      await axios.post('/api/ghl/organizations/:organizationId/agency-accounts', values);
-      message.success('Agency account added successfully');
-      setModalVisible(false);
-      form.resetFields();
-      fetchAgencies();
+      setLoading(true);
+      const response = await axios.get('/api/ghl/sub-accounts');
+      setSubAccounts(response.data);
     } catch (error) {
-      message.error('Failed to add agency account');
+      message.error('Failed to fetch sub-accounts');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleConnect = async () => {
     try {
-      await axios.delete(`/api/ghl/agency-accounts/${id}`);
-      message.success('Agency account deleted successfully');
-      fetchAgencies();
+      const response = await axios.get('/api/ghl/connect');
+      window.location.href = response.data.authUrl;
     } catch (error) {
-      message.error('Failed to delete agency account');
+      message.error('Failed to initiate connection');
+    }
+  };
+
+  const handleSync = async () => {
+    try {
+      setSyncing(true);
+      await axios.post('/api/ghl/sync');
+      await fetchSubAccounts();
+      message.success('Sub-accounts synchronized successfully');
+    } catch (error) {
+      message.error('Failed to synchronize sub-accounts');
+    } finally {
+      setSyncing(false);
     }
   };
 
   const columns = [
     {
-      title: 'Name',
+      title: 'Account Name',
       dataIndex: 'name',
       key: 'name',
     },
     {
-      title: 'Agency ID',
-      dataIndex: 'agency_id',
-      key: 'agency_id',
+      title: 'Account ID',
+      dataIndex: 'account_id',
+      key: 'account_id',
     },
     {
       title: 'Status',
-      dataIndex: 'is_active',
+      dataIndex: 'status',
       key: 'status',
-      render: (isActive) => (
-        <Tag color={isActive ? 'success' : 'error'}>
-          {isActive ? 'Active' : 'Inactive'}
+      render: (status) => (
+        <Tag color={status === 'active' ? 'success' : 'error'}>
+          {status === 'active' ? 'Active' : 'Inactive'}
         </Tag>
       ),
     },
     {
-      title: 'Created At',
-      dataIndex: 'created_at',
-      key: 'created_at',
-      render: (date) => new Date(date).toLocaleDateString(),
-    },
-    {
-      title: 'Actions',
-      key: 'actions',
-      render: (_, record) => (
-        <Space>
-          <Button
-            type="text"
-            icon={<EditOutlined />}
-            onClick={() => {
-              form.setFieldsValue(record);
-              setModalVisible(true);
-            }}
-          />
-          <Popconfirm
-            title="Are you sure you want to delete this agency account?"
-            onConfirm={() => handleDelete(record.id)}
-          >
-            <Button type="text" danger icon={<DeleteOutlined />} />
-          </Popconfirm>
-        </Space>
-      ),
+      title: 'Last Sync',
+      dataIndex: 'last_sync',
+      key: 'last_sync',
+      render: (date) => date ? new Date(date).toLocaleString() : 'Never',
     },
   ];
 
   return (
-    <Card
-      title="GoHighLevel Agency Accounts"
-      extra={
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => setModalVisible(true)}
-        >
-          Add Agency Account
-        </Button>
-      }
-    >
-      <Table
-        columns={columns}
-        dataSource={agencies}
-        loading={loading}
-        rowKey="id"
-      />
+    <Card>
+      <Title level={4}>GoHighLevel Agency Account</Title>
+      
+      {!agency ? (
+        <div style={{ textAlign: 'center', padding: '40px 0' }}>
+          <Alert
+            message="No GoHighLevel Account Connected"
+            description="Connect your GoHighLevel agency account to manage your sub-accounts."
+            type="info"
+            showIcon
+            style={{ marginBottom: 24 }}
+          />
+          <Button
+            type="primary"
+            icon={<LinkOutlined />}
+            size="large"
+            onClick={handleConnect}
+          >
+            Connect GoHighLevel Account
+          </Button>
+        </div>
+      ) : (
+        <>
+          <div style={{ marginBottom: 24 }}>
+            <Space direction="vertical" size="small">
+              <Text strong>Agency Name:</Text>
+              <Text>{agency.name}</Text>
+              <Text strong>Agency ID:</Text>
+              <Text>{agency.agency_id}</Text>
+              <Text strong>Connection Status:</Text>
+              <Tag color="success">Connected</Tag>
+            </Space>
+          </div>
 
-      <Modal
-        title="Add Agency Account"
-        open={modalVisible}
-        onCancel={() => {
-          setModalVisible(false);
-          form.resetFields();
-        }}
-        onOk={() => form.submit()}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleSubmit}
-        >
-          <Form.Item
-            name="name"
-            label="Agency Name"
-            rules={[{ required: true, message: 'Please enter agency name' }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="agency_id"
-            label="Agency ID"
-            rules={[{ required: true, message: 'Please enter agency ID' }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="api_key"
-            label="API Key"
-            rules={[{ required: true, message: 'Please enter API key' }]}
-          >
-            <Input.Password />
-          </Form.Item>
-        </Form>
-      </Modal>
+          <div style={{ marginBottom: 24 }}>
+            <Button
+              type="primary"
+              icon={<SyncOutlined />}
+              loading={syncing}
+              onClick={handleSync}
+            >
+              Synchronize Sub-Accounts
+            </Button>
+          </div>
+
+          <Title level={5}>Sub-Accounts</Title>
+          <Table
+            columns={columns}
+            dataSource={subAccounts}
+            loading={loading}
+            rowKey="account_id"
+          />
+        </>
+      )}
     </Card>
   );
 };
