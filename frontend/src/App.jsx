@@ -11,6 +11,8 @@ import DashboardLayout from './components/userLayout/DashboardLayout';
 import { isAuthenticated } from './services/auth';
 import IntegrationTools from './pages/user/IntegrationTools';
 import WorkflowActions from './components/workflow/WorkflowActions';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import Sidebar from './components/layout/Sidebar';
 
 const PrivateRoute = ({ children }) => {
   const [isAuth, setIsAuth] = useState(null);
@@ -30,28 +32,46 @@ const PrivateRoute = ({ children }) => {
   return isAuth ? children : <Navigate to="/login" />;
 };
 
+// Protected Route component
+function ProtectedRoute({ children }) {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
+
+  return children;
+}
+
 const App = () => {
   return (
-    <ConfigProvider
-      theme={{
-        token: {
-          colorPrimary: '#1890ff',
-        },
-      }}
-    >
-      <Router basename="/">
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route
-            path="/*"
-            element={
-              <PrivateRoute>
-                <DashboardLayout />
-              </PrivateRoute>
-            }
-          >
-            <Route index element={<Navigate to="/dashboard" />} />
-            <Route path="dashboard" element={<Dashboard />} />
+    <AuthProvider>
+      <ConfigProvider
+        theme={{
+          token: {
+            colorPrimary: '#1890ff',
+          },
+        }}
+      >
+        <Router basename="/">
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route
+              path="/dashboard/*"
+              element={
+                <ProtectedRoute>
+                  <div className="flex h-screen">
+                    <Sidebar />
+                    <Dashboard />
+                  </div>
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/" element={<Navigate to="/dashboard" />} />
             
             {/* User Routes */}
             <Route path="users">
@@ -66,11 +86,10 @@ const App = () => {
             {/* Admin Routes */}
             <Route path="schema" element={<Schema />} />
             <Route path="workflows" element={<WorkflowActions />} />
-          </Route>
-          <Route path="*" element={<Navigate to="/login" />} />
-        </Routes>
-      </Router>
-    </ConfigProvider>
+          </Routes>
+        </Router>
+      </ConfigProvider>
+    </AuthProvider>
   );
 };
 

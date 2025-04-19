@@ -1,4 +1,4 @@
-import api from '../utils/axios';
+import { supabase } from '../config/supabase';
 
 const TEMP_ADMIN = {
   id: 1,
@@ -17,37 +17,60 @@ const TEMP_ADMIN = {
 
 export const login = async (email, password) => {
   try {
-    const { data } = await api.post('/auth/login', {
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
-      password
+      password,
     });
-
-    if (data.token) {
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-    }
-
-    return {
-      user: data.user,
-      token: data.token
-    };
+    if (error) throw error;
+    return data;
   } catch (error) {
-    throw new Error(error.response?.data?.message || 'Login failed');
+    console.error('Login error:', error);
+    throw error;
   }
 };
 
-export const logout = () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
+export const signUp = async (email, password) => {
+  try {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Signup error:', error);
+    throw error;
+  }
 };
 
-export const getCurrentUser = () => {
-  const user = localStorage.getItem('user');
-  return user ? JSON.parse(user) : null;
+export const signOut = async () => {
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+  } catch (error) {
+    console.error('Signout error:', error);
+    throw error;
+  }
 };
 
-export const isAuthenticated = () => {
-  return !!localStorage.getItem('token');
+export const getCurrentUser = async () => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    return user;
+  } catch (error) {
+    console.error('Get current user error:', error);
+    throw error;
+  }
+};
+
+export const isAuthenticated = async () => {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    return !!session;
+  } catch (error) {
+    console.error('Auth check error:', error);
+    return false;
+  }
 };
 
 export const hasPermission = (permission) => {

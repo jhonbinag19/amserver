@@ -1,4 +1,4 @@
-const jwt = require('jsonwebtoken');
+const { supabase } = require('../config/supabase');
 
 const DEMO_USER = {
   id: 1,
@@ -19,35 +19,54 @@ const authController = {
   async login(req, res) {
     try {
       const { email, password } = req.body;
-
-      if (email !== DEMO_USER.email || password !== DEMO_USER.password) {
-        return res.status(401).json({ message: 'Invalid credentials' });
-      }
-
-      // Generate JWT token
-      const token = jwt.sign(
-        { 
-          id: DEMO_USER.id,
-          email: DEMO_USER.email,
-          role: DEMO_USER.role
-        },
-        process.env.JWT_SECRET || 'your-secret-key',
-        { expiresIn: '24h' }
-      );
-
-      res.json({
-        token,
-        user: {
-          id: DEMO_USER.id,
-          name: DEMO_USER.name,
-          email: DEMO_USER.email,
-          role: DEMO_USER.role,
-          permissions: DEMO_USER.permissions
-        }
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
+      if (error) throw error;
+      res.json(data);
     } catch (error) {
       console.error('Login error:', error);
-      res.status(500).json({ message: 'Internal server error' });
+      res.status(400).json({ error: error.message });
+    }
+  },
+
+  async signup(req, res) {
+    try {
+      const { email, password } = req.body;
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+      if (error) throw error;
+      res.json(data);
+    } catch (error) {
+      console.error('Signup error:', error);
+      res.status(400).json({ error: error.message });
+    }
+  },
+
+  async logout(req, res) {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      res.json({ message: 'Logged out successfully' });
+    } catch (error) {
+      console.error('Logout error:', error);
+      res.status(400).json({ error: error.message });
+    }
+  },
+
+  async getCurrentUser(req, res) {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        return res.status(401).json({ error: 'Not authenticated' });
+      }
+      res.json({ user });
+    } catch (error) {
+      console.error('Get current user error:', error);
+      res.status(400).json({ error: error.message });
     }
   },
 
@@ -59,20 +78,27 @@ const authController = {
         return res.status(401).json({ message: 'No token provided' });
       }
 
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+      const { data: { user }, error } = await supabase.auth.getUser(token);
+      if (error) throw error;
+
+      // Get user profile
+      const { data: profile, error: profileError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError) throw profileError;
 
       res.json({
         user: {
-          id: DEMO_USER.id,
-          name: DEMO_USER.name,
-          email: DEMO_USER.email,
-          role: DEMO_USER.role,
-          permissions: DEMO_USER.permissions
+          ...user,
+          ...profile,
         }
       });
     } catch (error) {
       console.error('Token verification error:', error);
-      res.status(401).json({ message: 'Invalid token' });
+      res.status(401).json({ message: error.message });
     }
   }
 };
