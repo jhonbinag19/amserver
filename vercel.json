@@ -15,11 +15,5 @@
         }
       ]
     }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "frontend/build/$1"
-    }
   ]
 } 
