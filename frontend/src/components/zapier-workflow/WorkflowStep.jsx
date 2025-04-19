@@ -12,7 +12,8 @@ import {
   Checkbox,
   Divider,
   Typography,
-  Collapse
+  Collapse,
+  Alert
 } from 'antd';
 import {
   ApiOutlined,
@@ -20,13 +21,29 @@ import {
   CodeOutlined,
   DatabaseOutlined,
   LinkOutlined,
-  SettingOutlined
+  SettingOutlined,
+  PlayCircleOutlined,
+  WarningOutlined
 } from '@ant-design/icons';
 
 const { Option } = Select;
 const { TabPane } = Tabs;
 const { Panel } = Collapse;
-const { Text } = Typography;
+const { Text, Title } = Typography;
+
+const TRIGGER_TYPES = {
+  WEBHOOK: 'webhook',
+  SCHEDULE: 'schedule',
+  EVENT: 'event',
+  MANUAL: 'manual'
+};
+
+const ACTION_TYPES = {
+  HTTP: 'http',
+  DATABASE: 'database',
+  INTEGRATION: 'integration',
+  CUSTOM: 'custom'
+};
 
 const WorkflowStep = ({ step, onUpdate, integrations, workflowSteps }) => {
   const [form] = Form.useForm();
@@ -49,20 +66,64 @@ const WorkflowStep = ({ step, onUpdate, integrations, workflowSteps }) => {
   };
 
   const renderTriggerConfig = () => {
-    switch (step.config.type) {
-      case 'webhook':
-        return (
-          <Form.Item
-            name="webhookUrl"
-            label="Webhook URL"
-            rules={[{ required: true, message: 'Please enter webhook URL' }]}
+    return (
+      <>
+        <Form.Item
+          name="type"
+          label="Trigger Type"
+          rules={[{ required: true, message: 'Please select trigger type' }]}
+        >
+          <Select 
+            placeholder="Select trigger type"
+            onChange={(value) => handleValuesChange({ type: value })}
           >
-            <Input placeholder="Enter webhook URL" />
-          </Form.Item>
-        );
-      case 'schedule':
-        return (
+            {Object.entries(TRIGGER_TYPES).map(([key, value]) => (
+              <Option key={key} value={value}>
+                {value.charAt(0).toUpperCase() + value.slice(1)}
+              </Option>
+            ))}
+          </Select>
+        </Form.Item>
+
+        {step.config.type === TRIGGER_TYPES.WEBHOOK && (
           <>
+            <Alert
+              message="Webhook Configuration"
+              description="This trigger will be activated when a webhook is received at the specified URL."
+              type="info"
+              showIcon
+              style={{ marginBottom: 16 }}
+            />
+            <Form.Item
+              name="webhookUrl"
+              label="Webhook URL"
+              rules={[{ required: true, message: 'Please enter webhook URL' }]}
+            >
+              <Input placeholder="Enter webhook URL" />
+            </Form.Item>
+            <Form.Item
+              name="method"
+              label="HTTP Method"
+              rules={[{ required: true, message: 'Please select HTTP method' }]}
+            >
+              <Select placeholder="Select HTTP method">
+                <Option value="POST">POST</Option>
+                <Option value="GET">GET</Option>
+                <Option value="PUT">PUT</Option>
+              </Select>
+            </Form.Item>
+          </>
+        )}
+
+        {step.config.type === TRIGGER_TYPES.SCHEDULE && (
+          <>
+            <Alert
+              message="Schedule Configuration"
+              description="This trigger will be activated based on the specified schedule."
+              type="info"
+              showIcon
+              style={{ marginBottom: 16 }}
+            />
             <Form.Item
               name="scheduleType"
               label="Schedule Type"
@@ -105,36 +166,68 @@ const WorkflowStep = ({ step, onUpdate, integrations, workflowSteps }) => {
               </Form.Item>
             )}
           </>
-        );
-      case 'event':
-        return (
-          <Form.Item
-            name="eventType"
-            label="Event Type"
-            rules={[{ required: true, message: 'Please select event type' }]}
-          >
-            <Select 
-              placeholder="Select event type"
-              onChange={(value) => handleValuesChange({ eventType: value })}
+        )}
+
+        {step.config.type === TRIGGER_TYPES.EVENT && (
+          <>
+            <Alert
+              message="Event Configuration"
+              description="This trigger will be activated when the specified event occurs."
+              type="info"
+              showIcon
+              style={{ marginBottom: 16 }}
+            />
+            <Form.Item
+              name="eventType"
+              label="Event Type"
+              rules={[{ required: true, message: 'Please select event type' }]}
             >
-              {integrations.map(integration => (
-                <Option key={integration.id} value={integration.name}>
-                  {integration.displayName}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-        );
-      default:
-        return null;
-    }
+              <Select 
+                placeholder="Select event type"
+                onChange={(value) => handleValuesChange({ eventType: value })}
+              >
+                {integrations.map(integration => (
+                  <Option key={integration.id} value={integration.name}>
+                    {integration.displayName}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </>
+        )}
+      </>
+    );
   };
 
   const renderActionConfig = () => {
-    switch (step.config.type) {
-      case 'http':
-        return (
+    return (
+      <>
+        <Form.Item
+          name="type"
+          label="Action Type"
+          rules={[{ required: true, message: 'Please select action type' }]}
+        >
+          <Select 
+            placeholder="Select action type"
+            onChange={(value) => handleValuesChange({ type: value })}
+          >
+            {Object.entries(ACTION_TYPES).map(([key, value]) => (
+              <Option key={key} value={value}>
+                {value.charAt(0).toUpperCase() + value.slice(1)}
+              </Option>
+            ))}
+          </Select>
+        </Form.Item>
+
+        {step.config.type === ACTION_TYPES.HTTP && (
           <>
+            <Alert
+              message="HTTP Action Configuration"
+              description="This action will make an HTTP request to the specified URL."
+              type="info"
+              showIcon
+              style={{ marginBottom: 16 }}
+            />
             <Form.Item
               name="method"
               label="HTTP Method"
@@ -171,36 +264,17 @@ const WorkflowStep = ({ step, onUpdate, integrations, workflowSteps }) => {
               <Input.TextArea placeholder="Enter request body" />
             </Form.Item>
           </>
-        );
-      case 'database':
-        return (
+        )}
+
+        {step.config.type === ACTION_TYPES.INTEGRATION && (
           <>
-            <Form.Item
-              name="databaseType"
-              label="Database Type"
-              rules={[{ required: true, message: 'Please select database type' }]}
-            >
-              <Select 
-                placeholder="Select database type"
-                onChange={(value) => handleValuesChange({ databaseType: value })}
-              >
-                <Option value="mysql">MySQL</Option>
-                <Option value="postgresql">PostgreSQL</Option>
-                <Option value="mongodb">MongoDB</Option>
-              </Select>
-            </Form.Item>
-            <Form.Item
-              name="query"
-              label="Query"
-              rules={[{ required: true, message: 'Please enter query' }]}
-            >
-              <Input.TextArea placeholder="Enter database query" />
-            </Form.Item>
-          </>
-        );
-      case 'integration':
-        return (
-          <>
+            <Alert
+              message="Integration Action Configuration"
+              description="This action will use the selected integration to perform the specified action."
+              type="info"
+              showIcon
+              style={{ marginBottom: 16 }}
+            />
             <Form.Item
               name="integration"
               label="Integration"
@@ -236,33 +310,40 @@ const WorkflowStep = ({ step, onUpdate, integrations, workflowSteps }) => {
               </Select>
             </Form.Item>
           </>
-        );
-      default:
-        return null;
-    }
-  };
+        )}
 
-  const renderConditionConfig = () => {
-    return (
-      <>
-        <Form.Item
-          name="conditionType"
-          label="Condition Type"
-          rules={[{ required: true, message: 'Please select condition type' }]}
-        >
-          <Select placeholder="Select condition type">
-            <Option value="if">If</Option>
-            <Option value="switch">Switch</Option>
-            <Option value="loop">Loop</Option>
-          </Select>
-        </Form.Item>
-        <Form.Item
-          name="expression"
-          label="Condition Expression"
-          rules={[{ required: true, message: 'Please enter condition expression' }]}
-        >
-          <Input.TextArea placeholder="Enter condition expression" />
-        </Form.Item>
+        {step.config.type === ACTION_TYPES.DATABASE && (
+          <>
+            <Alert
+              message="Database Action Configuration"
+              description="This action will execute the specified database query."
+              type="info"
+              showIcon
+              style={{ marginBottom: 16 }}
+            />
+            <Form.Item
+              name="databaseType"
+              label="Database Type"
+              rules={[{ required: true, message: 'Please select database type' }]}
+            >
+              <Select 
+                placeholder="Select database type"
+                onChange={(value) => handleValuesChange({ databaseType: value })}
+              >
+                <Option value="mysql">MySQL</Option>
+                <Option value="postgresql">PostgreSQL</Option>
+                <Option value="mongodb">MongoDB</Option>
+              </Select>
+            </Form.Item>
+            <Form.Item
+              name="query"
+              label="Query"
+              rules={[{ required: true, message: 'Please enter query' }]}
+            >
+              <Input.TextArea placeholder="Enter database query" />
+            </Form.Item>
+          </>
+        )}
       </>
     );
   };
@@ -297,7 +378,6 @@ const WorkflowStep = ({ step, onUpdate, integrations, workflowSteps }) => {
         >
           {step.type === 'trigger' && renderTriggerConfig()}
           {step.type === 'action' && renderActionConfig()}
-          {step.type === 'condition' && renderConditionConfig()}
         </TabPane>
 
         <TabPane

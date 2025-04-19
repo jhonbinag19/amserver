@@ -22,7 +22,8 @@ import {
   Divider,
   Typography,
   InputNumber,
-  Checkbox
+  Checkbox,
+  Alert
 } from 'antd';
 import {
   PlusOutlined,
@@ -36,13 +37,15 @@ import {
   SaveOutlined,
   DragOutlined,
   SettingOutlined,
-  FilterOutlined
+  FilterOutlined,
+  WarningOutlined
 } from '@ant-design/icons';
 import axios from 'axios';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import WorkflowCanvas from './WorkflowCanvas';
 import WorkflowStep from './WorkflowStep';
+import IntegrationTools from './IntegrationTools';
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -59,8 +62,8 @@ const TRIGGER_TYPES = {
 const ACTION_TYPES = {
   HTTP: 'http',
   DATABASE: 'database',
-  CUSTOM: 'custom',
-  INTEGRATION: 'integration'
+  INTEGRATION: 'integration',
+  CUSTOM: 'custom'
 };
 
 const WorkflowManager = () => {
@@ -75,6 +78,7 @@ const WorkflowManager = () => {
   const [activeTab, setActiveTab] = useState('list');
   const [workflowSteps, setWorkflowSteps] = useState([]);
   const [selectedStep, setSelectedStep] = useState(null);
+  const [connections, setConnections] = useState([]);
 
   useEffect(() => {
     fetchWorkflows();
@@ -166,7 +170,9 @@ const WorkflowManager = () => {
       id: `step-${Date.now()}`,
       type,
       name: `New ${type} Step`,
-      config: {},
+      config: {
+        type: type === 'trigger' ? TRIGGER_TYPES.WEBHOOK : ACTION_TYPES.HTTP
+      },
       next: []
     };
     setWorkflowSteps([...workflowSteps, newStep]);
@@ -180,6 +186,13 @@ const WorkflowManager = () => {
 
   const removeStep = (stepId) => {
     setWorkflowSteps(workflowSteps.filter(step => step.id !== stepId));
+    setConnections(conns => conns.filter(conn => 
+      conn.from !== stepId && conn.to !== stepId
+    ));
+  };
+
+  const handleConnectSteps = (fromStepId, toStepId) => {
+    setConnections([...connections, { from: fromStepId, to: toStepId }]);
   };
 
   const handleFormValuesChange = (changedValues) => {
@@ -257,6 +270,7 @@ const WorkflowManager = () => {
               onClick={() => {
                 setSelectedWorkflow(record);
                 setWorkflowSteps(record.steps || []);
+                setConnections(record.connections || []);
                 setActiveTab('builder');
               }}
             />
@@ -313,29 +327,36 @@ const WorkflowManager = () => {
                 <Col span={6}>
                   <Card title="Steps Library">
                     <Space direction="vertical" style={{ width: '100%' }}>
+                      <Alert
+                        message="Triggers"
+                        description="Start your workflow with a trigger"
+                        type="info"
+                        showIcon
+                        style={{ marginBottom: 16 }}
+                      />
                       <Button
                         type="dashed"
                         block
-                        icon={<PlusOutlined />}
+                        icon={<PlayCircleOutlined />}
                         onClick={() => addStep('trigger')}
                       >
                         Add Trigger
                       </Button>
+                      <Divider />
+                      <Alert
+                        message="Actions"
+                        description="Add actions to your workflow"
+                        type="info"
+                        showIcon
+                        style={{ marginBottom: 16 }}
+                      />
                       <Button
                         type="dashed"
                         block
-                        icon={<PlusOutlined />}
+                        icon={<ApiOutlined />}
                         onClick={() => addStep('action')}
                       >
                         Add Action
-                      </Button>
-                      <Button
-                        type="dashed"
-                        block
-                        icon={<PlusOutlined />}
-                        onClick={() => addStep('condition')}
-                      >
-                        Add Condition
                       </Button>
                     </Space>
                   </Card>
@@ -352,7 +373,8 @@ const WorkflowManager = () => {
                             if (selectedWorkflow) {
                               handleUpdateWorkflow(selectedWorkflow.id, {
                                 ...selectedWorkflow,
-                                steps: workflowSteps
+                                steps: workflowSteps,
+                                connections
                               });
                             }
                           }}
@@ -364,9 +386,11 @@ const WorkflowManager = () => {
                   >
                     <WorkflowCanvas
                       steps={workflowSteps}
-                      onStepSelect={setSelectedStep}
-                      onStepUpdate={updateStep}
-                      onStepRemove={removeStep}
+                      onAddStep={addStep}
+                      onEditStep={setSelectedStep}
+                      onDeleteStep={removeStep}
+                      onConnectSteps={handleConnectSteps}
+                      connections={connections}
                     />
                   </Card>
                 </Col>
@@ -385,6 +409,9 @@ const WorkflowManager = () => {
                 </Card>
               )}
             </DndProvider>
+          </TabPane>
+          <TabPane tab="Integration Tools" key="integrations">
+            <IntegrationTools />
           </TabPane>
         </Tabs>
       </Card>

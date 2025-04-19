@@ -733,9 +733,12 @@ const ApiConnection = () => {
   const [selectedSubcategory, setSelectedSubcategory] = useState(null);
   const [favorites, setFavorites] = useState([]);
   const [showFavorites, setShowFavorites] = useState(false);
+  const [connectedTools, setConnectedTools] = useState([]);
+  const [toolsLoading, setToolsLoading] = useState(false);
 
   useEffect(() => {
     checkConnection();
+    fetchConnectedTools();
   }, []);
 
   const checkConnection = async () => {
@@ -744,6 +747,18 @@ const ApiConnection = () => {
       setConnectionStatus(response.data);
     } catch (error) {
       message.error('Failed to check connection status');
+    }
+  };
+
+  const fetchConnectedTools = async () => {
+    try {
+      setToolsLoading(true);
+      const response = await axios.get('/api/integrations/tools');
+      setConnectedTools(response.data);
+    } catch (error) {
+      message.error('Failed to fetch connected tools');
+    } finally {
+      setToolsLoading(false);
     }
   };
 
@@ -756,13 +771,14 @@ const ApiConnection = () => {
   const handleApiSubmit = async (values) => {
     try {
       setLoading(true);
-      await axios.post('/api/ghl/organizations/:organizationId/connect', {
+      const response = await axios.post('/api/ghl/organizations/:organizationId/connect', {
         ...values,
         integration_type: selectedIntegration.value,
         auth_type: authType
       });
       message.success('Connection established successfully');
       checkConnection();
+      fetchConnectedTools();
     } catch (error) {
       message.error('Failed to establish connection');
     } finally {
@@ -784,6 +800,7 @@ const ApiConnection = () => {
       await axios.post('/api/ghl/organizations/:organizationId/disconnect');
       message.success('Connection disconnected successfully');
       setConnectionStatus(null);
+      setConnectedTools([]);
     } catch (error) {
       message.error('Failed to disconnect');
     }
