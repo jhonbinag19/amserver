@@ -9,16 +9,19 @@
       }
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "handle": "filesystem"
+      "source": "/static/(.*)",
+      "destination": "/static/$1"
     },
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ],
-  "rewrites": [
+      "source": "/favicon.ico",
+      "destination": "/favicon.ico"
+    },
+    {
+      "source": "/manifest.json",
+      "destination": "/manifest.json"
+    },
     {
       "source": "/(.*)",
       "destination": "/index.html"
