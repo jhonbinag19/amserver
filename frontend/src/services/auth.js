@@ -1,4 +1,4 @@
-import { supabase } from '../config/supabase';
+import api from '../utils/axios';
 
 const TEMP_ADMIN = {
   id: 1,
@@ -17,64 +17,40 @@ const TEMP_ADMIN = {
 
 export const login = async (email, password) => {
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { data } = await api.post('/auth/login', {
       email,
       password
     });
 
-    if (error) throw error;
+    if (data.token) {
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+    }
 
     return {
       user: data.user,
-      token: data.session.access_token
+      token: data.token
     };
   } catch (error) {
-    throw new Error(error.message || 'Login failed');
+    throw new Error(error.response?.data?.message || 'Login failed');
   }
 };
 
-export const logout = async () => {
-  try {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-  } catch (error) {
-    throw new Error(error.message || 'Logout failed');
-  }
+export const logout = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
 };
 
-export const getCurrentUser = async () => {
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    return user;
-  } catch (error) {
-    return null;
-  }
+export const getCurrentUser = () => {
+  const user = localStorage.getItem('user');
+  return user ? JSON.parse(user) : null;
 };
 
-export const isAuthenticated = async () => {
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    return !!user;
-  } catch (error) {
-    return false;
-  }
+export const isAuthenticated = () => {
+  return !!localStorage.getItem('token');
 };
 
-export const hasPermission = async (permission) => {
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return false;
-
-    // Get user permissions from Supabase
-    const { data: permissions, error } = await supabase
-      .from('user_permissions')
-      .select('permission')
-      .eq('user_id', user.id);
-
-    if (error) throw error;
-
-    return permissions.some(p => p.permission === permission);
-  } catch (error) {
-    return false;
-  }
+export const hasPermission = (permission) => {
+  const user = getCurrentUser();
+  return user?.permissions?.includes(permission) || false;
 }; 
