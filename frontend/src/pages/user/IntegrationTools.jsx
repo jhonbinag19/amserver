@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Tabs, List, Tag, Button, Space, Typography, Badge, message, Tooltip, Input, Row, Col } from 'antd';
+import { Card, Tabs, List, Tag, Button, Space, Typography, Badge, message, Tooltip, Input, Row, Col, Modal, Steps, Select, Divider } from 'antd';
 import { 
   ApiOutlined, 
   SyncOutlined, 
@@ -8,10 +8,8 @@ import {
   CheckCircleOutlined,
   ExclamationCircleOutlined,
   SearchOutlined,
-  AppstoreOutlined,
-  RobotOutlined,
-  ToolOutlined,
-  HomeOutlined
+  PlusOutlined,
+  ArrowRightOutlined
 } from '@ant-design/icons';
 import WorkflowActions from '../../components/workflow/WorkflowActions';
 import api from '../../utils/axios';
@@ -19,14 +17,18 @@ import api from '../../utils/axios';
 const { TabPane } = Tabs;
 const { Title, Text } = Typography;
 const { Search } = Input;
+const { Option } = Select;
+const { Step } = Steps;
 
 const IntegrationTools = () => {
   const [connectedTools, setConnectedTools] = useState([]);
   const [loading, setLoading] = useState(false);
   const [syncingTool, setSyncingTool] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [searching, setSearching] = useState(false);
+  const [workflowModalVisible, setWorkflowModalVisible] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [selectedTool, setSelectedTool] = useState(null);
+  const [selectedTrigger, setSelectedTrigger] = useState(null);
+  const [selectedAction, setSelectedAction] = useState(null);
 
   const topApps = [
     { name: 'ActiveCampaign', icon: '📧', category: 'Email Marketing' },
@@ -58,6 +60,41 @@ const IntegrationTools = () => {
     { name: 'Interfaces', icon: '🖥️', description: 'Create custom interfaces' },
     { name: 'Tables', icon: '📊', description: 'Manage data in tables' }
   ];
+
+  // Sample triggers and actions for each tool
+  const toolActions = {
+    'Facebook Lead Ads': {
+      triggers: [
+        { name: 'New Comment on Ad', description: 'Triggers when a new comment on an Ad is created', type: 'polling' },
+        { name: 'New Lead', description: 'Triggers when a new lead is created', type: 'instant' }
+      ],
+      actions: [
+        { name: 'Create Lead', description: 'Creates a new lead in Facebook' },
+        { name: 'Update Lead', description: 'Updates an existing lead' }
+      ]
+    },
+    'Flodesk': {
+      triggers: [
+        { name: 'New Subscriber', description: 'Triggers when a new subscriber is added' },
+        { name: 'Form Submission', description: 'Triggers when a form is submitted' }
+      ],
+      actions: [
+        { name: 'Add to Segment', description: 'Adds a subscriber to a segment' },
+        { name: 'Create/Update Subscriber', description: 'Creates or updates a subscriber' },
+        { name: 'Remove from Segment', description: 'Removes a subscriber from a segment' }
+      ]
+    },
+    'Twilio': {
+      triggers: [
+        { name: 'New SMS Received', description: 'Triggers when a new SMS is received' },
+        { name: 'Call Status Change', description: 'Triggers when a call status changes' }
+      ],
+      actions: [
+        { name: 'Send SMS', description: 'Sends an SMS message' },
+        { name: 'Make Call', description: 'Initiates a phone call' }
+      ]
+    }
+  };
 
   useEffect(() => {
     fetchConnectedTools();
@@ -98,20 +135,76 @@ const IntegrationTools = () => {
     }
   };
 
-  const handleSearch = async (value) => {
-    try {
-      setSearching(true);
-      const response = await api.post('/api/integrations/perplexity-search', {
-        query: value,
-        key: '90320e7d-56ee-4748-8b2d-cc2b44ee9c8d'
-      });
-      setSearchResults(response.data.results);
-      message.success('Search completed successfully');
-    } catch (error) {
-      message.error('Failed to perform search');
-    } finally {
-      setSearching(false);
-    }
+  const handleCreateWorkflow = () => {
+    setWorkflowModalVisible(true);
+    setCurrentStep(0);
+  };
+
+  const renderTriggerSelection = () => {
+    if (!selectedTool) return null;
+    const tool = toolActions[selectedTool];
+    if (!tool) return null;
+
+    return (
+      <div style={{ marginTop: 16 }}>
+        <Title level={5}>Select Trigger Event</Title>
+        <Search
+          placeholder="Search events"
+          style={{ marginBottom: 16 }}
+        />
+        <List
+          dataSource={tool.triggers}
+          renderItem={trigger => (
+            <List.Item
+              className={selectedTrigger?.name === trigger.name ? 'selected-item' : ''}
+              onClick={() => setSelectedTrigger(trigger)}
+              style={{ cursor: 'pointer', padding: '12px' }}
+            >
+              <List.Item.Meta
+                title={trigger.name}
+                description={trigger.description}
+              />
+              {trigger.type && (
+                <Tag color={trigger.type === 'instant' ? 'green' : 'blue'}>
+                  {trigger.type}
+                </Tag>
+              )}
+            </List.Item>
+          )}
+        />
+      </div>
+    );
+  };
+
+  const renderActionSelection = () => {
+    if (!selectedTool) return null;
+    const tool = toolActions[selectedTool];
+    if (!tool) return null;
+
+    return (
+      <div style={{ marginTop: 16 }}>
+        <Title level={5}>Select Action Event</Title>
+        <Search
+          placeholder="Search actions"
+          style={{ marginBottom: 16 }}
+        />
+        <List
+          dataSource={tool.actions}
+          renderItem={action => (
+            <List.Item
+              className={selectedAction?.name === action.name ? 'selected-item' : ''}
+              onClick={() => setSelectedAction(action)}
+              style={{ cursor: 'pointer', padding: '12px' }}
+            >
+              <List.Item.Meta
+                title={action.name}
+                description={action.description}
+              />
+            </List.Item>
+          )}
+        />
+      </div>
+    );
   };
 
   const renderToolStatus = (status) => {
@@ -223,81 +316,118 @@ const IntegrationTools = () => {
             key="actions"
           >
             <div style={{ marginBottom: 24 }}>
-              <Search
-                placeholder="Search 7,000+ apps and tools..."
-                enterButton={<SearchOutlined />}
-                size="large"
-                style={{ maxWidth: 800 }}
-              />
-              <div style={{ marginTop: 16 }}>
-                <Space size={16}>
-                  <Button icon={<HomeOutlined />}>Apps</Button>
-                  <Button icon={<ApiOutlined />}>Zapier products</Button>
-                  <Button icon={<ToolOutlined />}>Built-in tools</Button>
-                  <Button icon={<RobotOutlined />}>AI</Button>
+              <Space direction="vertical" style={{ width: '100%' }}>
+                <Space>
+                  <Button 
+                    type="primary" 
+                    icon={<PlusOutlined />}
+                    onClick={handleCreateWorkflow}
+                  >
+                    Create Workflow
+                  </Button>
+                  <Search
+                    placeholder="Search workflows..."
+                    style={{ width: 300 }}
+                  />
                 </Space>
-              </div>
+                <Text type="secondary">
+                  Create and manage your automated workflows using your connected tools
+                </Text>
+              </Space>
             </div>
 
-            <Row gutter={[24, 24]}>
-              <Col span={16}>
-                <Card title="Your top apps" size="small">
-                  <List
-                    grid={{ gutter: 16, column: 4 }}
-                    dataSource={topApps}
-                    renderItem={app => (
-                      <List.Item>
-                        <Card hoverable size="small" style={{ textAlign: 'center' }}>
-                          <div style={{ fontSize: 24, marginBottom: 8 }}>{app.icon}</div>
-                          <div style={{ fontSize: 12 }}>{app.name}</div>
-                        </Card>
-                      </List.Item>
-                    )}
-                  />
-                </Card>
-              </Col>
-              <Col span={8}>
-                <Card title="Popular built-in tools" size="small">
-                  <List
-                    size="small"
-                    dataSource={builtInTools}
-                    renderItem={tool => (
-                      <List.Item>
-                        <Space>
-                          <span style={{ fontSize: 16 }}>{tool.icon}</span>
-                          <span>{tool.name}</span>
-                        </Space>
-                      </List.Item>
-                    )}
-                  />
-                </Card>
-              </Col>
-            </Row>
-
-            <Card title="New Zapier products" style={{ marginTop: 24 }} size="small">
-              <List
-                grid={{ gutter: 16, column: 3 }}
-                dataSource={zapierProducts}
-                renderItem={product => (
-                  <List.Item>
-                    <Card hoverable size="small">
-                      <Space>
-                        <span style={{ fontSize: 24 }}>{product.icon}</span>
-                        <div>
-                          <div style={{ fontWeight: 'bold' }}>{product.name}</div>
-                          <div style={{ fontSize: 12, color: '#666' }}>{product.description}</div>
-                        </div>
-                      </Space>
-                    </Card>
-                  </List.Item>
-                )}
-              />
-            </Card>
-
-            <WorkflowActions />
+            <List
+              grid={{ gutter: 16, column: 3 }}
+              dataSource={connectedTools}
+              renderItem={tool => (
+                <List.Item>
+                  <Card size="small" hoverable>
+                    <Space align="start">
+                      <img 
+                        src={tool.icon} 
+                        alt={tool.name} 
+                        style={{ width: 40, height: 40 }} 
+                      />
+                      <div>
+                        <div style={{ fontWeight: 'bold' }}>{tool.name}</div>
+                        <Text type="secondary">
+                          {toolActions[tool.name]?.triggers.length || 0} Triggers, {' '}
+                          {toolActions[tool.name]?.actions.length || 0} Actions
+                        </Text>
+                      </div>
+                    </Space>
+                  </Card>
+                </List.Item>
+              )}
+            />
           </TabPane>
         </Tabs>
       </Card>
+
+      <Modal
+        title="Create New Workflow"
+        open={workflowModalVisible}
+        onCancel={() => {
+          setWorkflowModalVisible(false);
+          setSelectedTool(null);
+          setSelectedTrigger(null);
+          setSelectedAction(null);
+          setCurrentStep(0);
+        }}
+        width={800}
+        footer={[
+          <Button key="back" onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}>
+            Previous
+          </Button>,
+          <Button 
+            key="next" 
+            type="primary"
+            onClick={() => setCurrentStep(currentStep + 1)}
+            disabled={
+              (currentStep === 0 && !selectedTool) ||
+              (currentStep === 1 && !selectedTrigger) ||
+              (currentStep === 2 && !selectedAction)
+            }
+          >
+            {currentStep === 2 ? 'Create' : 'Next'}
+          </Button>
+        ]}
+      >
+        <Steps current={currentStep} style={{ marginBottom: 24 }}>
+          <Step title="Select Tool" />
+          <Step title="Choose Trigger" />
+          <Step title="Add Action" />
+        </Steps>
+
+        {currentStep === 0 && (
+          <div>
+            <Title level={5}>Select Tool</Title>
+            <Select
+              style={{ width: '100%' }}
+              placeholder="Choose a tool"
+              value={selectedTool}
+              onChange={setSelectedTool}
+            >
+              {connectedTools.map(tool => (
+                <Option key={tool.name} value={tool.name}>
+                  <Space>
+                    <img 
+                      src={tool.icon} 
+                      alt={tool.name} 
+                      style={{ width: 20, height: 20 }} 
+                    />
+                    {tool.name}
+                  </Space>
+                </Option>
+              ))}
+            </Select>
+            {renderTriggerSelection()}
+          </div>
+        )}
+
+        {currentStep === 1 && renderTriggerSelection()}
+        {currentStep === 2 && renderActionSelection()}
+      </Modal>
     </div>
   );
 };
